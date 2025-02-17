@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro - Reflexões da Fé</title>
     <link rel="stylesheet" href="./css/register.css">
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
 </head>
 <body>
     <div class="container">
@@ -16,51 +13,25 @@
             <p class="subtitle">Crie sua conta para participar da nossa comunidade</p>
         </header>
 
-        <form id="register-form" onsubmit="return handleRegister(event)">
+        <form id="register-form">
             <div class="form-group">
                 <label for="fullName">Nome Completo</label>
-                <input 
-                    type="text" 
-                    id="fullName" 
-                    name="fullName" 
-                    required 
-                    autocomplete="name"
-                >
+                <input type="text" id="fullName" name="fullName" required autocomplete="name">
             </div>
 
             <div class="form-group">
                 <label for="email">E-mail</label>
-                <input 
-                    type="email" 
-                    id="email" 
-                    name="email" 
-                    required 
-                    autocomplete="email"
-                >
+                <input type="email" id="email" name="email" required autocomplete="email">
             </div>
 
             <div class="form-group">
                 <label for="password">Senha</label>
-                <input 
-                    type="password" 
-                    id="password" 
-                    name="password" 
-                    required 
-                    minlength="8"
-                    autocomplete="new-password"
-                >
+                <input type="password" id="password" name="password" required minlength="8" autocomplete="new-password">
             </div>
 
             <div class="form-group">
                 <label for="confirmPassword">Confirmar Senha</label>
-                <input 
-                    type="password" 
-                    id="confirmPassword" 
-                    name="confirmPassword" 
-                    required 
-                    minlength="8"
-                    autocomplete="new-password"
-                >
+                <input type="password" id="confirmPassword" name="confirmPassword" required minlength="8" autocomplete="new-password">
             </div>
 
             <button type="submit">Criar Conta</button>
@@ -71,67 +42,57 @@
         </p>
 
         <div id="verse" class="verse">
-            "No princípio, era o Verbo, e o Verbo estava com Deus, e o Verbo era Deus. Ele estava no princípio com Deus. Todas as coisas foram feitas por ele, e sem ele nada do que foi feito se fez." - João 1:1-3
+            "No princípio, era o Verbo, e o Verbo estava com Deus, e o Verbo era Deus..." - João 1:1-3
         </div>
     </div>
 
-    <script src="./js/register.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBg-r1Ui8RPYSfWRSozmPkSYVRhBBMFeqw",
+            authDomain: "reflexoes-da-fe.firebaseapp.com",
+            projectId: "reflexoes-da-fe",
+            storageBucket: "reflexoes-da-fe.firebasestorage.app",
+            messagingSenderId: "384516829244",
+            appId: "1:384516829244:web:3d2351f612d3ab48de9339"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth();
+        const db = getFirestore();
+
+        document.getElementById('register-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const fullName = document.getElementById('fullName').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (password !== confirmPassword) {
+                alert('As senhas não coincidem!');
+                return;
+            }
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                
+                await addDoc(collection(db, "users"), {
+                    uid: userCredential.user.uid,
+                    fullName: fullName,
+                    email: email,
+                    createdAt: new Date()
+                });
+
+                alert('Usuário registrado com sucesso!');
+                window.location.href = "index.html";
+            } catch (error) {
+                alert('Erro ao registrar usuário: ' + error.message);
+            }
+        });
+    </script>
 </body>
-
-<script type="module">
-    // Importar as funções necessárias do SDK do Firebase
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js";
-  
-    // Configuração do Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyBg-r1Ui8RPYSfWRSozmPkSYVRhBBMFeqw",
-      authDomain: "reflexoes-da-fe.firebaseapp.com",
-      projectId: "reflexoes-da-fe",
-      storageBucket: "reflexoes-da-fe.firebasestorage.app",
-      messagingSenderId: "384516829244",
-      appId: "1:384516829244:web:3d2351f612d3ab48de9339"
-    };
-  
-    // Inicializar o Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth();
-    const db = getFirestore();
-
-    // Função para registrar o usuário
-    async function handleRegister(event) {
-        event.preventDefault();
-        
-        const fullName = document.getElementById('fullName').value;
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
-        
-        // Verificar se as senhas coincidem
-        if (password !== confirmPassword) {
-            alert('As senhas não coincidem!');
-            return;
-        }
-
-        try {
-            // Criar usuário com e-mail e senha
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
-            
-            // Salvar dados no Firestore
-            await addDoc(collection(db, "users"), {
-                uid: user.uid,
-                fullName: fullName,
-                email: email,
-                createdAt: new Date()
-            });
-
-            alert('Usuário registrado com sucesso!');
-            window.location.href = "index.html"; // Redireciona para a página de login
-        } catch (error) {
-            alert('Erro ao registrar usuário: ' + error.message);
-        }
-    }
-</script>
 </html>
