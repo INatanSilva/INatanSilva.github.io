@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Reflexões da Fé</title>
     <link rel="stylesheet" href="./css/login.css">
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
 </head>
 <body>
     <div class="container">
@@ -16,7 +13,7 @@
             <p class="subtitle">Entre para acessar sua conta</p>
         </header>
 
-        <form id="login-form" onsubmit="return handleLogin(event)">
+        <form id="login-form">
             <div class="form-group">
                 <label for="email">E-mail</label>
                 <input 
@@ -52,27 +49,57 @@
         </div>
     </div>
 
-    <script src="./js/login.js"></script>
+    <!-- Script para Firebase (com tipo module) -->
+    <script type="module">
+        // Importando os módulos Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-auth.js";
+
+        // Configuração do Firebase
+        const firebaseConfig = {
+          apiKey: "AIzaSyBg-r1Ui8RPYSfWRSozmPkSYVRhBBMFeqw",
+          authDomain: "reflexoes-da-fe.firebaseapp.com",
+          projectId: "reflexoes-da-fe",
+          storageBucket: "reflexoes-da-fe.firebasestorage.app",
+          messagingSenderId: "384516829244",
+          appId: "1:384516829244:web:3d2351f612d3ab48de9339"
+        };
+
+        // Inicializar o Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth();
+
+        // Função de login
+        async function handleLogin(event) {
+            event.preventDefault(); // Previne o envio do formulário
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            // Validar email e senha
+            if (!email || !password) {
+                alert("Por favor, preencha todos os campos.");
+                return;
+            }
+
+            console.log("Tentando login com:", email); // Verifica se a função está sendo chamada
+
+            try {
+                // Autenticar o usuário
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                alert("Login bem-sucedido! Redirecionando...");
+                window.location.href = "./ScreenHome.html"; // Redireciona para a página principal
+
+            } catch (error) {
+                console.error("Erro no login:", error);
+                alert("Erro ao efetuar login: " + error.message);
+            }
+        }
+
+        // Adicionar o listener ao formulário
+        const form = document.getElementById('login-form');
+        form.addEventListener('submit', handleLogin); // Evita usar o onsubmit diretamente no HTML
+    </script>
+
 </body>
-
-<script type="module">
-    // Import the functions you need from the SDKs you need
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
-    // TODO: Add SDKs for Firebase products that you want to use
-    // https://firebase.google.com/docs/web/setup#available-libraries
-  
-    // Your web app's Firebase configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyBg-r1Ui8RPYSfWRSozmPkSYVRhBBMFeqw",
-      authDomain: "reflexoes-da-fe.firebaseapp.com",
-      projectId: "reflexoes-da-fe",
-      storageBucket: "reflexoes-da-fe.firebasestorage.app",
-      messagingSenderId: "384516829244",
-      appId: "1:384516829244:web:3d2351f612d3ab48de9339"
-    };
-  
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-  </script>
-
 </html>
