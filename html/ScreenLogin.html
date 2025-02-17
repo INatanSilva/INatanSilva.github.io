@@ -3,28 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro - Reflexões da Fé</title>
+    <title>Login - Reflexões da Fé</title>
     <link rel="stylesheet" href="./css/login.css">
 </head>
 <body>
     <div class="container">
         <header>
             <h1>Reflexões da Fé</h1>
-            <p class="subtitle">Crie sua conta para participar da nossa comunidade</p>
+            <p class="subtitle">Entre para acessar sua conta</p>
         </header>
 
-        <form id="register-form" onsubmit="return handleRegister(event)">
-            <div class="form-group">
-                <label for="fullName">Nome Completo</label>
-                <input 
-                    type="text" 
-                    id="fullName" 
-                    name="fullName" 
-                    required 
-                    autocomplete="name"
-                >
-            </div>
-
+        <form id="login-form" onsubmit="return handleLogin(event)">
             <div class="form-group">
                 <label for="email">E-mail</label>
                 <input 
@@ -44,15 +33,15 @@
                     name="password" 
                     required 
                     minlength="8"
-                    autocomplete="new-password"
+                    autocomplete="current-password"
                 >
             </div>
 
-            <button type="submit">Criar Conta</button>
+            <button type="submit">Entrar</button>
         </form>
 
-        <p class="login-link">
-            Já tem uma conta? <a href="index.html">Entrar</a>
+        <p class="register-link">
+            Ainda não tem uma conta? <a href="register.html">Criar conta</a>
         </p>
 
         <div id="verse" class="verse">

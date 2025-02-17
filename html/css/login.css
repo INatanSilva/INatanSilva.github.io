@@ -81,14 +81,14 @@ button:hover {
     background: #444;
 }
 
-.login-link {
+.register-link {
     text-align: center;
     margin-top: 20px;
     font-size: 0.9rem;
     color: #666;
 }
 
-.login-link a {
+.register-link a {
     color: #333;
     text-decoration: none;
     border-bottom: 1px solid #333;

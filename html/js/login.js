@@ -1,34 +1,13 @@
-function handleRegister(event) {
-    event.preventDefault();
-
-    const formData = {
-        fullName: document.getElementById('fullName').value,
-        email: document.getElementById('email').value,
-        password: document.getElementById('password').value
-    };
-
-    console.log('Dados do registro:', formData);
-
-    alert(`Registro realizado com sucesso!\nBem-vindo(a), ${formData.fullName}!`);
-
-    window.location.href = 'index.html';
-
-    return false;
-}
-
 function handleLogin(event) {
     event.preventDefault();
-
+    
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
 
-    if (email && password) {
-        alert('Login realizado com sucesso!');
-        // Aqui você pode redirecionar para a dashboard
-        window.location.href = 'dashboard.html';
-    } else {
-        alert('Por favor, preencha todos os campos.');
-    }
-
+    // Aqui você pode adicionar a lógica para enviar os dados para seu backend
+    console.log('Dados do login:', { email, password });
+    
+    // Por enquanto, apenas mostra uma mensagem de sucesso
+    alert('Login realizado com sucesso!');
     return false;
 }
