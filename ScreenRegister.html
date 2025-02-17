@@ -3,17 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Reflexões da Fé</title>
-    <link rel="stylesheet" href="./css/login.css">
+    <title>Registro - Reflexões da Fé</title>
+    <link rel="stylesheet" href="./css/register.css">
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
 </head>
 <body>
     <div class="container">
         <header>
             <h1>Reflexões da Fé</h1>
-            <p class="subtitle">Entre para acessar sua conta</p>
+            <p class="subtitle">Crie sua conta para participar da nossa comunidade</p>
         </header>
 
-        <form id="login-form" onsubmit="return handleLogin(event)">
+        <form id="register-form" onsubmit="return handleRegister(event)">
+            <div class="form-group">
+                <label for="fullName">Nome Completo</label>
+                <input 
+                    type="text" 
+                    id="fullName" 
+                    name="fullName" 
+                    required 
+                    autocomplete="name"
+                >
+            </div>
+
             <div class="form-group">
                 <label for="email">E-mail</label>
                 <input 
@@ -33,15 +47,27 @@
                     name="password" 
                     required 
                     minlength="8"
-                    autocomplete="current-password"
+                    autocomplete="new-password"
                 >
             </div>
 
-            <button type="submit">Entrar</button>
+            <div class="form-group">
+                <label for="confirmPassword">Confirmar Senha</label>
+                <input 
+                    type="password" 
+                    id="confirmPassword" 
+                    name="confirmPassword" 
+                    required 
+                    minlength="8"
+                    autocomplete="new-password"
+                >
+            </div>
+
+            <button type="submit">Criar Conta</button>
         </form>
 
-        <p class="register-link">
-            Ainda não tem uma conta? <a href="register.html">Criar conta</a>
+        <p class="login-link">
+            Já tem uma conta? <a href="index.html">Entrar</a>
         </p>
 
         <div id="verse" class="verse">
@@ -49,7 +75,7 @@
         </div>
     </div>
 
-    <script src="./js/login.js"></script>
+    <script src="./js/register.js"></script>
 </body>
 
 <script type="module">
