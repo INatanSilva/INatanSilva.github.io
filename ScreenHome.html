@@ -16,28 +16,67 @@
     </header>
 
     <nav>
-        <a href="#inicio">Início</a>
-        <a href="#reflexoes">Reflexões</a>
-        <a href="#oracoes">Orações</a>
-        <a href="#sobre">Sobre</a>
+        <a href="#" data-section="inicio" class="nav-link active">Início</a>
+        <a href="#" data-section="reflexoes" class="nav-link">Reflexões</a>
+        <a href="#" data-section="oracoes" class="nav-link">Orações</a>
+        <a href="#" data-section="sobre" class="nav-link">Sobre</a>
     </nav>
 
     <main>
-        <div id="verse" class="verse">
-            Carregando versículo...
-        </div>
+        <!-- Seção Início -->
+        <section id="inicio" class="section active">
+            <div id="verse" class="verse">
+                Carregando versículo...
+            </div>
 
-        <article class="post">
-            <h2 class="post-title">Simplicidade e Fé</h2>
-            <div class="post-meta">17 Fevereiro, 2025</div>
-            <p>A verdadeira fé se manifesta nas coisas simples do dia a dia. É no silêncio da manhã, na gratidão pelos pequenos momentos, que encontramos a presença divina...</p>
-        </article>
+            <article class="post">
+                <h2 class="post-title">Simplicidade e Fé</h2>
+                <div class="post-meta">17 Fevereiro, 2025</div>
+                <p>A verdadeira fé se manifesta nas coisas simples do dia a dia...</p>
+            </article>
 
-        <article class="post">
-            <h2 class="post-title">O Poder da Oração</h2>
-            <div class="post-meta">16 Fevereiro, 2025</div>
-            <p>Quando oramos, abrimos nosso coração para uma conexão profunda com o divino. A oração não precisa ser complexa ou elaborada, basta ser sincera...</p>
-        </article>
+            <article class="post">
+                <h2 class="post-title">O Poder da Oração</h2>
+                <div class="post-meta">16 Fevereiro, 2025</div>
+                <p>Quando oramos, abrimos nosso coração para uma conexão profunda...</p>
+            </article>
+        </section>
+
+        <!-- Seção Reflexões -->
+        <section id="reflexoes" class="section">
+            <h2>Reflexões Diárias</h2>
+            <div class="reflexoes-grid">
+                <article class="reflexao-card">
+                    <h3>Gratidão Diária</h3>
+                    <p>A gratidão é a chave para uma vida plena em Cristo...</p>
+                </article>
+                <article class="reflexao-card">
+                    <h3>Força na Adversidade</h3>
+                    <p>Nas dificuldades encontramos nossa verdadeira força...</p>
+                </article>
+            </div>
+        </section>
+
+        <!-- Seção Orações -->
+        <section id="oracoes" class="section">
+            <h2>Orações</h2>
+            <div class="oracoes-lista">
+                <article class="oracao-item">
+                    <h3>Oração da Manhã</h3>
+                    <p>Senhor, agradeço por mais um dia...</p>
+                </article>
+                <article class="oracao-item">
+                    <h3>Oração da Noite</h3>
+                    <p>Pai celestial, agradeço por este dia que se finda...</p>
+                </article>
+            </div>
+        </section>
+
+        <!-- Seção Sobre -->
+        <section id="sobre" class="section">
+            <h2>Sobre Nós</h2>
+            <p>Reflexões da Fé é um espaço dedicado à meditação e crescimento espiritual...</p>
+        </section>
 
         <div class="newsletter">
             <h3>Receba nossas reflexões</h3>

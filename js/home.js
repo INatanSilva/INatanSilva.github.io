@@ -17,5 +17,32 @@ function subscribeNewsletter(event) {
     return false;
 }
 
-document.addEventListener('DOMContentLoaded', updateVerse);
-setInterval(updateVerse, 24 * 60 * 60 * 1000);
+// Função para navegação
+function navegarPara(secaoId) {
+    // Remove a classe active de todas as seções e links
+    document.querySelectorAll('.section').forEach(section => {
+        section.classList.remove('active');
+    });
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+    });
+
+    // Adiciona a classe active na seção e link correspondentes
+    document.getElementById(secaoId).classList.add('active');
+    document.querySelector(`[data-section="${secaoId}"]`).classList.add('active');
+}
+
+// Adiciona eventos de clique nos links de navegação
+document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const secaoId = e.target.getAttribute('data-section');
+        navegarPara(secaoId);
+    });
+});
+
+// Inicializa na seção "inicio"
+document.addEventListener('DOMContentLoaded', () => {
+    updateVerse();
+    navegarPara('inicio');
+});
