@@ -9,6 +9,10 @@
 <body>
     <header>
         <h1>Reflexões da Fé</h1>
+        <div class="user-info">
+            <span id="userName">Carregando...</span>
+            <button id="logoutBtn">Sair</button>
+        </div>
     </header>
 
     <nav>
@@ -49,5 +53,76 @@
     </footer>
 
     <script src="./js/home.js"></script>
+    <script type="module">
+        // Importando os módulos Firebase necessários
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+        // Configuração do Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBg-r1Ui8RPYSfWRSozmPkSYVRhBBMFeqw",
+            authDomain: "reflexoes-da-fe.firebaseapp.com",
+            projectId: "reflexoes-da-fe",
+            storageBucket: "reflexoes-da-fe.firebasestorage.app",
+            messagingSenderId: "384516829244",
+            appId: "1:384516829244:web:3d2351f612d3ab48de9339"
+        };
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth();
+        const db = getFirestore();
+
+        // Verificar estado de autenticação e buscar dados do usuário
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                console.log("Usuário está logado:", user.uid);
+                try {
+                    // Primeiro, vamos buscar todos os documentos da coleção users
+                    const usersRef = collection(db, "users");
+                    const querySnapshot = await getDocs(usersRef);
+                    
+                    let userData = null;
+                    querySnapshot.forEach((doc) => {
+                        console.log("Documento encontrado:", doc.id, doc.data());
+                        // Aqui você pode adicionar a lógica para identificar o usuário correto
+                        // Por exemplo, se você armazenou o email do usuário no documento
+                        if (doc.data().email === user.email) {
+                            userData = doc.data();
+                        }
+                    });
+
+                    if (userData) {
+                        console.log("Dados do usuário encontrados:", userData);
+                        const userName = userData.fullName || userData.nome || userData.name;
+                        
+                        if (userName) {
+                            document.getElementById('userName').textContent = `Olá, ${userName}`;
+                        } else {
+                            console.log("Nome do usuário não encontrado nos dados:", userData);
+                        }
+                    } else {
+                        console.log("Dados do usuário não encontrados");
+                    }
+                } catch (error) {
+                    console.error("Erro ao buscar dados do usuário:", error);
+                }
+            } else {
+                console.log("Usuário não está logado, redirecionando...");
+                window.location.href = "./index.html";
+            }
+        });
+
+        // Função de logout
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                window.location.href = "./index.html";
+            } catch (error) {
+                console.error("Erro ao fazer logout:", error);
+            }
+        });
+    </script>
 </body>
 </html>
