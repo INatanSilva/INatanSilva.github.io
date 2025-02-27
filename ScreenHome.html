@@ -4,91 +4,121 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reflexões da Fé</title>
-    <link rel="stylesheet" href="./css/home.css">
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <header>
-        <h1>Reflexões da Fé</h1>
-        <div class="user-info">
-            <span id="userName">Carregando...</span>
-            <button id="logoutBtn">Sair</button>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+    <header class="bg-white shadow-md">
+        <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0">
+            <h1 class="text-2xl font-serif font-bold text-gray-800">Reflexões da Fé</h1>
+            <div class="flex items-center space-x-4">
+                <span id="userName" class="text-gray-600 text-sm sm:text-base">Carregando...</span>
+                <button id="logoutBtn" class="bg-gray-100 text-gray-700 px-3 sm:px-4 py-2 rounded-lg hover:bg-gray-200 transition duration-200 text-sm sm:text-base">
+                    Sair
+                </button>
+            </div>
         </div>
     </header>
 
-    <nav>
-        <a href="#" data-section="inicio" class="nav-link active">Início</a>
-        <a href="#" data-section="reflexoes" class="nav-link">Reflexões</a>
-        <a href="#" data-section="oracoes" class="nav-link">Orações</a>
-        <a href="#" data-section="sobre" class="nav-link">Sobre</a>
+    <nav class="bg-white shadow-sm sticky top-0 z-10">
+        <div class="container mx-auto px-2 sm:px-4">
+            <div class="flex space-x-1 overflow-x-auto py-1 scrollbar-hide">
+                <a href="#" data-section="inicio" class="nav-link active whitespace-nowrap flex-shrink-0 px-4 sm:px-6 py-3 sm:py-4 text-gray-700 border-b-2 border-blue-600 hover:text-blue-600 transition duration-200 text-sm sm:text-base">Início</a>
+                <a href="#" data-section="reflexoes" class="nav-link whitespace-nowrap flex-shrink-0 px-4 sm:px-6 py-3 sm:py-4 text-gray-500 hover:text-blue-600 transition duration-200 text-sm sm:text-base">Reflexões</a>
+                <a href="#" data-section="oracoes" class="nav-link whitespace-nowrap flex-shrink-0 px-4 sm:px-6 py-3 sm:py-4 text-gray-500 hover:text-blue-600 transition duration-200 text-sm sm:text-base">Orações</a>
+                <a href="#" data-section="sobre" class="nav-link whitespace-nowrap flex-shrink-0 px-4 sm:px-6 py-3 sm:py-4 text-gray-500 hover:text-blue-600 transition duration-200 text-sm sm:text-base">Sobre</a>
+            </div>
+        </div>
     </nav>
 
-    <main>
+    <main class="container mx-auto px-4 py-6 sm:py-8">
         <!-- Seção Início -->
-        <section id="inicio" class="section active">
-            <div id="verse" class="verse">
+        <section id="inicio" class="section active space-y-6 sm:space-y-8">
+            <div id="verse" class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg text-center italic text-gray-700 text-base sm:text-lg border border-gray-100">
                 Carregando versículo...
             </div>
 
-            <article class="post">
-                <h2 class="post-title">Simplicidade e Fé</h2>
-                <div class="post-meta">17 Fevereiro, 2025</div>
-                <p>A verdadeira fé se manifesta nas coisas simples do dia a dia...</p>
-            </article>
+            <div class="grid gap-6 sm:gap-8 md:grid-cols-2">
+                <article class="bg-white rounded-2xl shadow-lg overflow-hidden transform hover:scale-[1.02] transition duration-300">
+                    <div class="p-5 sm:p-6">
+                        <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Simplicidade e Fé</h2>
+                        <div class="text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4">17 Fevereiro, 2025</div>
+                        <p class="text-sm sm:text-base text-gray-600">A verdadeira fé se manifesta nas coisas simples do dia a dia...</p>
+                    </div>
+                </article>
 
-            <article class="post">
-                <h2 class="post-title">O Poder da Oração</h2>
-                <div class="post-meta">16 Fevereiro, 2025</div>
-                <p>Quando oramos, abrimos nosso coração para uma conexão profunda...</p>
-            </article>
+                <article class="bg-white rounded-2xl shadow-lg overflow-hidden transform hover:scale-[1.02] transition duration-300">
+                    <div class="p-5 sm:p-6">
+                        <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-2">O Poder da Oração</h2>
+                        <div class="text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4">16 Fevereiro, 2025</div>
+                        <p class="text-sm sm:text-base text-gray-600">Quando oramos, abrimos nosso coração para uma conexão profunda...</p>
+                    </div>
+                </article>
+            </div>
         </section>
 
         <!-- Seção Reflexões -->
-        <section id="reflexoes" class="section">
-            <h2>Reflexões Diárias</h2>
-            <div class="reflexoes-grid">
-                <article class="reflexao-card">
-                    <h3>Gratidão Diária</h3>
-                    <p>A gratidão é a chave para uma vida plena em Cristo...</p>
+        <section id="reflexoes" class="section hidden">
+            <h2 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-6 sm:mb-8">Reflexões Diárias</h2>
+            <div class="grid gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-3">
+                <article class="bg-white p-5 sm:p-6 rounded-2xl shadow-lg hover:shadow-xl transition duration-300">
+                    <h3 class="text-lg sm:text-xl font-bold text-gray-800 mb-3 sm:mb-4">Gratidão Diária</h3>
+                    <p class="text-sm sm:text-base text-gray-600">A gratidão é a chave para uma vida plena em Cristo...</p>
                 </article>
-                <article class="reflexao-card">
-                    <h3>Força na Adversidade</h3>
-                    <p>Nas dificuldades encontramos nossa verdadeira força...</p>
+                <article class="bg-white p-5 sm:p-6 rounded-2xl shadow-lg hover:shadow-xl transition duration-300">
+                    <h3 class="text-lg sm:text-xl font-bold text-gray-800 mb-3 sm:mb-4">Força na Adversidade</h3>
+                    <p class="text-sm sm:text-base text-gray-600">Nas dificuldades encontramos nossa verdadeira força...</p>
                 </article>
             </div>
         </section>
 
         <!-- Seção Orações -->
-        <section id="oracoes" class="section">
-            <h2>Orações</h2>
-            <div class="oracoes-lista">
-                <article class="oracao-item">
-                    <h3>Oração da Manhã</h3>
-                    <p>Senhor, agradeço por mais um dia...</p>
+        <section id="oracoes" class="section hidden">
+            <h2 class="text-3xl font-bold text-gray-800 mb-8">Orações</h2>
+            <div class="grid gap-8 md:grid-cols-2">
+                <article class="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition duration-300">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Oração da Manhã</h3>
+                    <p class="text-gray-600">Senhor, agradeço por mais um dia...</p>
                 </article>
-                <article class="oracao-item">
-                    <h3>Oração da Noite</h3>
-                    <p>Pai celestial, agradeço por este dia que se finda...</p>
+                <article class="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition duration-300">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Oração da Noite</h3>
+                    <p class="text-gray-600">Pai celestial, agradeço por este dia que se finda...</p>
                 </article>
             </div>
         </section>
 
         <!-- Seção Sobre -->
-        <section id="sobre" class="section">
-            <h2>Sobre Nós</h2>
-            <p>Reflexões da Fé é um espaço dedicado à meditação e crescimento espiritual...</p>
+        <section id="sobre" class="section hidden">
+            <div class="bg-white p-8 rounded-2xl shadow-lg max-w-2xl mx-auto">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6">Sobre Nós</h2>
+                <p class="text-gray-600 leading-relaxed">
+                    Reflexões da Fé é um espaço dedicado à meditação e crescimento espiritual...
+                </p>
+            </div>
         </section>
 
-        <div class="newsletter">
-            <h3>Receba nossas reflexões</h3>
-            <form id="newsletter-form" onsubmit="return subscribeNewsletter(event)">
-                <input type="email" placeholder="Seu e-mail" required>
-                <button type="submit">Inscrever</button>
+        <div class="newsletter bg-white rounded-2xl shadow-lg p-6 sm:p-8 mt-8 sm:mt-12">
+            <h3 class="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6 text-center">Receba nossas reflexões</h3>
+            <form id="newsletter-form" class="max-w-md mx-auto flex flex-col sm:flex-row gap-3 sm:gap-4" onsubmit="return subscribeNewsletter(event)">
+                <input 
+                    type="email" 
+                    placeholder="Seu e-mail" 
+                    required
+                    class="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
+                >
+                <button 
+                    type="submit"
+                    class="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl hover:from-blue-700 hover:to-blue-800 transition duration-300 text-sm sm:text-base"
+                >
+                    Inscrever
+                </button>
             </form>
         </div>
     </main>
 
-    <footer>
-        <p>Reflexões da Fé © 2025</p>
+    <footer class="bg-white mt-12 border-t border-gray-100">
+        <div class="container mx-auto px-4 py-6 text-center text-gray-600">
+            Reflexões da Fé © 2025
+        </div>
     </footer>
 
     <script src="./js/home.js"></script>
@@ -161,6 +191,34 @@
             } catch (error) {
                 console.error("Erro ao fazer logout:", error);
             }
+        });
+    </script>
+
+    <script>
+        // Gerenciamento da navegação
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                // Remove classes ativas
+                document.querySelectorAll('.nav-link').forEach(el => {
+                    el.classList.remove('border-b-2', 'border-blue-600', 'text-gray-700');
+                    el.classList.add('text-gray-500');
+                });
+                
+                // Adiciona classes ativas ao link clicado
+                link.classList.remove('text-gray-500');
+                link.classList.add('border-b-2', 'border-blue-600', 'text-gray-700');
+                
+                // Esconde todas as seções
+                document.querySelectorAll('.section').forEach(section => {
+                    section.classList.add('hidden');
+                });
+                
+                // Mostra a seção selecionada
+                const targetSection = document.getElementById(link.getAttribute('data-section'));
+                targetSection.classList.remove('hidden');
+            });
         });
     </script>
 </body>
