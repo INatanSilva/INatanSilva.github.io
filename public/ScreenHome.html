@@ -115,13 +115,66 @@
         </div>
     </main>
 
+    <!-- Chat Widget -->
+    <div id="chatWidget" class="fixed bottom-4 right-4 z-50">
+        <!-- Botão do Chat (minimizado) -->
+        <button id="chatToggle" class="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-4 shadow-lg transition duration-300 transform hover:scale-105">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+            </svg>
+            <span id="unreadCount" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
+        </button>
+
+        <!-- Janela do Chat (expandida) -->
+        <div id="chatWindow" class="hidden bg-white rounded-2xl shadow-2xl w-80 sm:w-96 h-96 mb-4 flex flex-col border border-gray-200">
+            <!-- Header do Chat -->
+            <div class="bg-blue-600 text-white p-4 rounded-t-2xl flex justify-between items-center">
+                <h3 class="font-semibold">💬 Chat Devocional</h3>
+                <button id="chatClose" class="text-white hover:text-gray-200 transition duration-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Área de Mensagens -->
+            <div id="chatMessages" class="flex-1 p-4 overflow-y-auto bg-gray-50 space-y-3">
+                <div class="text-center text-gray-500 text-sm">
+                    Bem-vindo ao chat da comunidade! 🙏
+                </div>
+            </div>
+
+            <!-- Área de Envio -->
+            <div class="p-4 border-t border-gray-200 bg-white rounded-b-2xl">
+                <form id="chatForm" class="flex space-x-2">
+                    <input 
+                        type="text" 
+                        id="chatInput" 
+                        placeholder="Digite sua mensagem..." 
+                        class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        maxlength="500"
+                    >
+                    <button 
+                        type="submit" 
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-200 flex items-center justify-center"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <footer class="bg-white mt-12 border-t border-gray-100">
         <div class="container mx-auto px-4 py-6 text-center text-gray-600">
             Reflexões da Fé © 2025
         </div>
     </footer>
 
-    <script src="./js/home.js"></script>
+    <script type="module" src="./js/home.js"></script>
+    <script type="module" src="./js/chat.js"></script>
     <script type="module">
         // Importando os módulos Firebase necessários
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
