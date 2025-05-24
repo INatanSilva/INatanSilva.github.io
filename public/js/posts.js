@@ -70,6 +70,30 @@ class PostsManager {
                 this.closeCreatePostModal();
             }
         });
+
+        // Event listeners para comentários
+        document.querySelectorAll('.comment-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const postId = e.currentTarget.dataset.postId;
+                const commentsSection = document.getElementById(`comments-${postId}`);
+                const input = commentsSection.querySelector('input[type="text"]');
+                if (input) {
+                    input.focus();
+                    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });
+        });
+
+        // Event listeners para botões de ver mais/menos comentários
+        document.querySelectorAll('[id^="comments-toggle-"]').forEach(toggleDiv => {
+            const button = toggleDiv.querySelector('button');
+            if (button) {
+                button.addEventListener('click', (e) => {
+                    const postId = toggleDiv.id.replace('comments-toggle-', '');
+                    this.toggleAllComments(postId);
+                });
+            }
+        });
     }
 
     openCreatePostModal() {
@@ -176,6 +200,11 @@ class PostsManager {
         
         // Adicionar event listeners após renderizar
         this.setupPostEventListeners();
+        
+        // Carregar comentários para todos os posts
+        for (const [postId] of this.posts) {
+            this.loadComments(postId);
+        }
     }
 
     async renderPost(post) {
@@ -277,9 +306,20 @@ class PostsManager {
                     </div>
 
                     <!-- Seção de Comentários (inicialmente oculta) -->
-                    <div id="comments-${post.id}" class="hidden mt-4 pt-4 border-t border-gray-100">
-                        <!-- Comentários serão carregados aqui -->
-                        <div id="comments-list-${post.id}" class="space-y-3 mb-4 max-h-64 sm:max-h-80 overflow-y-auto"></div>
+                    <div id="comments-${post.id}" class="mt-4 pt-4 border-t border-gray-100">
+                        <!-- Primeiros 3 comentários visíveis -->
+                        <div id="comments-preview-${post.id}" class="space-y-3 mb-4"></div>
+                        
+                        <!-- Comentários adicionais (ocultos inicialmente) -->
+                        <div id="comments-full-${post.id}" class="hidden space-y-3 mb-4 max-h-64 sm:max-h-80 overflow-y-auto"></div>
+                        
+                        <!-- Botão Ver Mais/Menos Comentários -->
+                        <div id="comments-toggle-${post.id}" class="hidden mb-4">
+                            <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                <span class="show-more">Ver mais comentários</span>
+                                <span class="show-less hidden">Ver menos comentários</span>
+                            </button>
+                        </div>
                         
                         <!-- Formulário de Novo Comentário -->
                         <form class="comment-form flex space-x-2 sm:space-x-3" data-post-id="${post.id}">
@@ -316,14 +356,6 @@ class PostsManager {
                 const postId = e.currentTarget.dataset.postId;
                 const reaction = e.currentTarget.dataset.reaction;
                 this.toggleReaction(postId, reaction);
-            });
-        });
-
-        // Event listeners para comentários
-        document.querySelectorAll('.comment-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const postId = e.currentTarget.dataset.postId;
-                this.toggleComments(postId);
             });
         });
 
@@ -383,16 +415,6 @@ class PostsManager {
         }
     }
 
-    toggleComments(postId) {
-        const commentsSection = document.getElementById(`comments-${postId}`);
-        if (commentsSection.classList.contains('hidden')) {
-            commentsSection.classList.remove('hidden');
-            this.loadComments(postId);
-        } else {
-            commentsSection.classList.add('hidden');
-        }
-    }
-
     async addComment(postId, content) {
         if (!this.currentUser || !content) return;
 
@@ -430,17 +452,57 @@ class PostsManager {
         );
 
         onSnapshot(commentsQuery, (snapshot) => {
-            const commentsList = document.getElementById(`comments-list-${postId}`);
-            if (!commentsList) return;
-
-            let html = '';
+            const comments = [];
             snapshot.forEach((doc) => {
                 const comment = doc.data();
-                html += this.renderComment(comment);
+                comments.push(comment);
             });
 
-            commentsList.innerHTML = html;
+            this.renderCommentsWithPreview(postId, comments);
         });
+    }
+
+    renderCommentsWithPreview(postId, comments) {
+        const previewContainer = document.getElementById(`comments-preview-${postId}`);
+        const fullContainer = document.getElementById(`comments-full-${postId}`);
+        const toggleContainer = document.getElementById(`comments-toggle-${postId}`);
+        
+        if (!previewContainer || !fullContainer || !toggleContainer) return;
+
+        // Limpar containers
+        previewContainer.innerHTML = '';
+        fullContainer.innerHTML = '';
+
+        if (comments.length === 0) {
+            return;
+        }
+
+        // Renderizar até 3 comentários no preview
+        const previewComments = comments.slice(0, 3);
+        const remainingComments = comments.slice(3);
+
+        // Adicionar comentários do preview
+        previewComments.forEach(comment => {
+            previewContainer.innerHTML += this.renderComment(comment);
+        });
+
+        // Se há mais de 3 comentários, mostrar botão e preparar lista completa
+        if (remainingComments.length > 0) {
+            toggleContainer.classList.remove('hidden');
+            
+            // Renderizar todos os comentários no container completo
+            comments.forEach(comment => {
+                fullContainer.innerHTML += this.renderComment(comment);
+            });
+
+            // Atualizar texto do botão
+            const showMoreSpan = toggleContainer.querySelector('.show-more');
+            if (showMoreSpan) {
+                showMoreSpan.textContent = `Ver mais ${remainingComments.length} comentários`;
+            }
+        } else {
+            toggleContainer.classList.add('hidden');
+        }
     }
 
     renderComment(comment) {
@@ -536,18 +598,18 @@ class PostsManager {
                 textSize = 'text-sm';
                 break;
             case 'small':
-                sizeClasses = 'px-1 py-0.5 sm:px-1.5 sm:py-0.5';
+                sizeClasses = 'px-1.5 py-0.5';
                 iconSize = 'text-xs';
                 textSize = 'text-xs';
                 break;
             default:
-                sizeClasses = 'px-1 py-0.5';
+                sizeClasses = 'px-1.5 py-0.5';
                 iconSize = 'text-xs';
                 textSize = 'text-xs';
         }
         
         return `
-            <span class="${config.color} ${config.textColor} ${sizeClasses} rounded-full font-bold inline-flex items-center space-x-0.5 sm:space-x-1 shadow-sm">
+            <span class="${config.color} ${config.textColor} ${sizeClasses} rounded-full font-bold inline-flex items-center space-x-1 shadow-sm">
                 <span class="${iconSize}">${config.icon}</span>
                 <span class="${textSize}">${config.label}</span>
             </span>
@@ -612,6 +674,28 @@ class PostsManager {
                 }
             }, 300);
         }, 4000);
+    }
+
+    toggleAllComments(postId) {
+        const previewContainer = document.getElementById(`comments-preview-${postId}`);
+        const fullContainer = document.getElementById(`comments-full-${postId}`);
+        const toggleContainer = document.getElementById(`comments-toggle-${postId}`);
+        const showMoreSpan = toggleContainer.querySelector('.show-more');
+        const showLessSpan = toggleContainer.querySelector('.show-less');
+
+        if (fullContainer.classList.contains('hidden')) {
+            // Mostrar todos os comentários
+            previewContainer.classList.add('hidden');
+            fullContainer.classList.remove('hidden');
+            showMoreSpan.classList.add('hidden');
+            showLessSpan.classList.remove('hidden');
+        } else {
+            // Mostrar apenas o preview
+            previewContainer.classList.remove('hidden');
+            fullContainer.classList.add('hidden');
+            showMoreSpan.classList.remove('hidden');
+            showLessSpan.classList.add('hidden');
+        }
     }
 }
 
