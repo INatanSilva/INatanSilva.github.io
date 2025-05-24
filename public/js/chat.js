@@ -1,6 +1,6 @@
 import { db } from './firebase.js';
-import { collection, addDoc, onSnapshot, orderBy, query, serverTimestamp } from 'https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js';
-import { getAuth } from 'https://www.gstatic.com/firebasejs/11.3.1/firebase-auth.js';
+import { collection, addDoc, onSnapshot, orderBy, query, serverTimestamp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
+import { getAuth } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
 
 class DevotionalChat {
     constructor() {

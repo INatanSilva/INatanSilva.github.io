@@ -12,8 +12,8 @@ import {
     deleteDoc,
     getDocs,
     updateDoc
-} from 'https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js';
-import { getAuth } from 'https://www.gstatic.com/firebasejs/11.3.1/firebase-auth.js';
+} from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
+import { getAuth } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
 
 class DevotionalGroupManager {
     constructor() {
@@ -28,7 +28,6 @@ class DevotionalGroupManager {
         this.initializeElements();
         this.setupEventListeners();
         this.startPresenceSystem();
-        this.loadActiveRooms();
     }
 
     initializeElements() {
@@ -77,10 +76,17 @@ class DevotionalGroupManager {
 
         // Monitor mudanças no auth
         this.auth.onAuthStateChanged((user) => {
+            console.log('Auth state changed:', user?.uid);
             if (user) {
                 this.currentUser = user;
+                console.log('Current user definido:', this.currentUser.uid);
                 this.updateUserPresence();
                 this.loadOnlineUsers();
+                // Recarregar salas ativas quando o usuário for definido
+                this.loadActiveRooms();
+            } else {
+                this.currentUser = null;
+                console.log('Usuário não logado');
             }
         });
     }
@@ -104,7 +110,7 @@ class DevotionalGroupManager {
                 userId: this.currentUser.uid,
                 userEmail: this.currentUser.email,
                 userName: this.getUserName(),
-                lastSeen: serverTimestamp(),
+                lastSeen: new Date(),
                 isOnline: true
             }, { merge: true });
         } catch (error) {
@@ -119,7 +125,7 @@ class DevotionalGroupManager {
             const presenceRef = doc(db, 'userPresence', this.currentUser.uid);
             await updateDoc(presenceRef, {
                 isOnline: false,
-                lastSeen: serverTimestamp()
+                lastSeen: new Date()
             });
         } catch (error) {
             console.error('Erro ao remover presença:', error);
@@ -284,22 +290,28 @@ class DevotionalGroupManager {
                 })
             ];
 
+            console.log('Criando sala com participantes:', allParticipants);
+            console.log('Nomes dos participantes:', allParticipantNames);
+
             // Criar sala de devocional
             const roomData = {
                 title,
                 book,
-                chapter,
+                chapter: parseInt(chapter),
                 verse,
                 description,
                 createdBy: this.currentUser.uid,
                 createdByName: this.getUserName(),
                 participants: allParticipants,
                 participantNames: allParticipantNames,
-                createdAt: serverTimestamp(),
+                createdAt: new Date(),
                 isActive: true
             };
 
+            console.log('Dados da sala a ser criada:', roomData);
+
             const roomRef = await addDoc(collection(db, 'devotionalRooms'), roomData);
+            console.log('Sala criada com ID:', roomRef.id);
             
             // Limpar formulário
             this.devotionalForm.reset();
@@ -322,27 +334,39 @@ class DevotionalGroupManager {
     }
 
     loadActiveRooms() {
+        console.log('Carregando salas ativas...');
+        
+        // Remover orderBy temporariamente para evitar problemas de índice
         const roomsQuery = query(
             collection(db, 'devotionalRooms'),
-            where('isActive', '==', true),
-            orderBy('createdAt', 'desc')
+            where('isActive', '==', true)
         );
 
         onSnapshot(roomsQuery, (snapshot) => {
+            console.log('Snapshot recebido, tamanho:', snapshot.size);
             this.activeRooms.clear();
             
             snapshot.forEach((doc) => {
-                this.activeRooms.set(doc.id, { id: doc.id, ...doc.data() });
+                const roomData = { id: doc.id, ...doc.data() };
+                console.log('Sala encontrada:', roomData);
+                this.activeRooms.set(doc.id, roomData);
             });
             
+            console.log('Total de salas ativas:', this.activeRooms.size);
+            console.log('Current user:', this.currentUser?.uid);
             this.renderActiveRooms();
         });
     }
 
     renderActiveRooms() {
-        if (!this.activeRoomsContainer) return;
+        console.log('Renderizando salas ativas...');
+        if (!this.activeRoomsContainer) {
+            console.log('Container de salas ativas não encontrado');
+            return;
+        }
 
         if (this.activeRooms.size === 0) {
+            console.log('Nenhuma sala ativa encontrada');
             this.activeRoomsContainer.innerHTML = `
                 <div class="text-center text-gray-500 p-8">
                     Nenhuma sala ativa no momento
@@ -354,10 +378,14 @@ class DevotionalGroupManager {
         // Filtrar salas onde o usuário é participante
         const userRooms = [];
         this.activeRooms.forEach((room, roomId) => {
-            if (room.participants.includes(this.currentUser?.uid)) {
+            console.log('Verificando sala:', roomId, 'Participantes:', room.participants, 'Current user:', this.currentUser?.uid);
+            if (room.participants && room.participants.includes(this.currentUser?.uid)) {
+                console.log('Usuário é participante da sala:', roomId);
                 userRooms.push({ id: roomId, ...room });
             }
         });
+
+        console.log('Salas do usuário:', userRooms.length);
 
         if (userRooms.length === 0) {
             this.activeRoomsContainer.innerHTML = `
@@ -410,6 +438,7 @@ class DevotionalGroupManager {
         });
 
         this.activeRoomsContainer.innerHTML = html;
+        console.log('Salas renderizadas:', userRooms.length);
     }
 
     openDevotionalRoom(roomId, roomData) {
