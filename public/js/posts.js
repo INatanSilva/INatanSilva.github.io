@@ -22,6 +22,7 @@ class PostsManager {
         this.currentUser = null;
         this.userProfiles = new Map();
         this.posts = new Map();
+        this.commentListeners = new Map();
         
         this.initializeElements();
         this.setupEventListeners();
@@ -32,6 +33,9 @@ class PostsManager {
             if (user) {
                 this.currentUser = user;
                 this.loadUserProfile(user.uid);
+                console.log('Usuário logado:', user.uid);
+            } else {
+                console.log('Usuário não está logado');
             }
         });
     }
@@ -103,6 +107,7 @@ class PostsManager {
                 const input = e.currentTarget.querySelector('input[type="text"]');
                 const content = input.value.trim();
                 if (content) {
+                    console.log('Enviando comentário:', { postId, content });
                     this.addComment(postId, content);
                     input.value = '';
                 }
@@ -226,10 +231,9 @@ class PostsManager {
         // Adicionar event listeners após renderizar
         this.setupPostEventListeners();
         
-        // Carregar comentários para todos os posts
-        for (const [postId] of this.posts) {
-            this.loadComments(postId);
-        }
+        // Carregar comentários imediatamente após renderizar
+        console.log('Carregando comentários automaticamente para', this.posts.size, 'posts');
+        this.loadAllComments();
     }
 
     async renderPost(post) {
@@ -386,6 +390,32 @@ class PostsManager {
                 });
             }
         });
+
+        // Event listeners para formulários de comentário
+        document.querySelectorAll('.comment-form').forEach(form => {
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const postId = e.currentTarget.dataset.postId;
+                const input = e.currentTarget.querySelector('input[type="text"]');
+                const content = input.value.trim();
+                if (content) {
+                    console.log('Enviando comentário:', { postId, content });
+                    this.addComment(postId, content);
+                    input.value = '';
+                }
+            });
+            
+            // Adicionar evento para envio com Enter
+            const input = form.querySelector('input[type="text"]');
+            if (input) {
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        form.dispatchEvent(new Event('submit'));
+                    }
+                });
+            }
+        });
     }
 
     async toggleReaction(postId, reactionType) {
@@ -419,7 +449,12 @@ class PostsManager {
     }
 
     async addComment(postId, content) {
-        if (!this.currentUser || !content) return;
+        if (!this.currentUser || !content) {
+            console.log('Usuário não logado ou conteúdo vazio');
+            return;
+        }
+
+        console.log('Adicionando comentário:', { postId, content });
 
         try {
             const userProfile = await this.loadUserProfile(this.currentUser.uid);
@@ -433,6 +468,8 @@ class PostsManager {
                 createdAt: new Date()
             };
 
+            console.log('Dados do comentário:', commentData);
+
             await addDoc(collection(db, 'comments'), commentData);
             
             // Incrementar contador de comentários no post
@@ -440,6 +477,14 @@ class PostsManager {
             await updateDoc(postRef, {
                 commentsCount: increment(1)
             });
+
+            console.log('Comentário adicionado com sucesso!');
+            this.showSuccessNotification('Comentário adicionado! 💬');
+            
+            // Recarregar comentários para este post específico para garantir exibição imediata
+            setTimeout(() => {
+                this.loadComments(postId);
+            }, 200);
             
         } catch (error) {
             console.error('Erro ao adicionar comentário:', error);
@@ -448,21 +493,61 @@ class PostsManager {
     }
 
     async loadComments(postId) {
-        const commentsQuery = query(
-            collection(db, 'comments'),
-            where('postId', '==', postId),
-            orderBy('createdAt', 'asc')
-        );
+        console.log(`Carregando comentários para post: ${postId}`);
+        
+        try {
+            const commentsQuery = query(
+                collection(db, 'comments'),
+                where('postId', '==', postId),
+                orderBy('createdAt', 'asc')
+            );
 
-        onSnapshot(commentsQuery, (snapshot) => {
-            const comments = [];
-            snapshot.forEach((doc) => {
-                const comment = doc.data();
-                comments.push(comment);
+            const unsubscribe = onSnapshot(commentsQuery, (snapshot) => {
+                console.log(`Snapshot recebido para post ${postId}:`, snapshot.size, 'documentos');
+                
+                const comments = [];
+                snapshot.forEach((doc) => {
+                    const comment = { id: doc.id, ...doc.data() };
+                    console.log('Comentário encontrado:', comment);
+                    comments.push(comment);
+                });
+
+                console.log(`Total de comentários para ${postId}:`, comments.length);
+                this.renderCommentsWithPreview(postId, comments);
+            }, (error) => {
+                console.error(`Erro ao carregar comentários para ${postId}:`, error);
             });
 
-            this.renderCommentsWithPreview(postId, comments);
-        });
+            // Armazenar o unsubscribe para limpeza posterior se necessário
+            if (!this.commentListeners) {
+                this.commentListeners = new Map();
+            }
+            this.commentListeners.set(postId, unsubscribe);
+
+        } catch (error) {
+            console.error(`Erro ao configurar listener de comentários para ${postId}:`, error);
+            
+            // Em caso de erro, tentar carregar comentários uma vez sem listener
+            try {
+                const commentsQuery = query(
+                    collection(db, 'comments'),
+                    where('postId', '==', postId),
+                    orderBy('createdAt', 'asc')
+                );
+                
+                const snapshot = await getDocs(commentsQuery);
+                const comments = [];
+                snapshot.forEach((doc) => {
+                    const comment = { id: doc.id, ...doc.data() };
+                    comments.push(comment);
+                });
+                
+                console.log(`Comentários carregados diretamente para ${postId}:`, comments.length);
+                this.renderCommentsWithPreview(postId, comments);
+            } catch (fallbackError) {
+                console.error(`Erro no fallback de comentários para ${postId}:`, fallbackError);
+            }
+        }
     }
 
     renderCommentsWithPreview(postId, comments) {
@@ -470,13 +555,26 @@ class PostsManager {
         const fullContainer = document.getElementById(`comments-full-${postId}`);
         const toggleContainer = document.getElementById(`comments-toggle-${postId}`);
         
-        if (!previewContainer || !fullContainer || !toggleContainer) return;
+        if (!previewContainer || !fullContainer || !toggleContainer) {
+            console.log('Containers não encontrados para post:', postId);
+            return;
+        }
 
         // Limpar containers
         previewContainer.innerHTML = '';
         fullContainer.innerHTML = '';
 
+        console.log(`Post ${postId}: ${comments.length} comentários encontrados`);
+
         if (comments.length === 0) {
+            // Mostrar mensagem quando não há comentários
+            previewContainer.innerHTML = `
+                <div class="text-center text-gray-500 py-4">
+                    <div class="mb-2 text-2xl">💬</div>
+                    <p class="text-sm">Seja o primeiro a comentar!</p>
+                </div>
+            `;
+            toggleContainer.classList.add('hidden');
             return;
         }
 
@@ -702,11 +800,34 @@ class PostsManager {
             showLessSpan.classList.add('hidden');
         }
     }
+
+    // Método para carregar comentários de todos os posts
+    loadAllComments() {
+        for (const [postId] of this.posts) {
+            // Carregar comentários com pequeno delay escalonado para evitar sobrecarga
+            setTimeout(() => {
+                this.loadComments(postId);
+            }, 100);
+        }
+    }
 }
 
 // Inicializar quando a página carregar
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM carregado, aguardando autenticação...');
+    
+    // Aguardar Firebase estar pronto
     setTimeout(() => {
+        console.log('Inicializando PostsManager...');
         window.postsManager = new PostsManager();
-    }, 1000);
+        
+        // Carregar comentários automaticamente após inicialização
+        setTimeout(() => {
+            if (window.postsManager && window.postsManager.posts.size > 0) {
+                console.log('Carregando comentários automaticamente após inicialização...');
+                window.postsManager.loadAllComments();
+            }
+        }, 1000);
+        
+    }, 1500);
 }); 
