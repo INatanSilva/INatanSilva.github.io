@@ -52,6 +52,7 @@ class DevotionalGroupManager {
         this.closeRoomModalBtn = document.getElementById('closeRoomModal');
         this.leaveRoomBtn = document.getElementById('leaveRoomBtn');
         this.shareRoomBtn = document.getElementById('shareRoomBtn');
+        this.deleteRoomBtn = document.getElementById('deleteRoomBtn');
     }
 
     setupEventListeners() {
@@ -66,6 +67,7 @@ class DevotionalGroupManager {
         this.roomChatForm?.addEventListener('submit', (e) => this.sendRoomMessage(e));
         this.leaveRoomBtn?.addEventListener('click', () => this.leaveRoom());
         this.shareRoomBtn?.addEventListener('click', () => this.shareRoom());
+        this.deleteRoomBtn?.addEventListener('click', () => this.deleteRoom());
 
         // Fechar modal ao clicar fora
         this.roomModal?.addEventListener('click', (e) => {
@@ -443,6 +445,7 @@ class DevotionalGroupManager {
 
     openDevotionalRoom(roomId, roomData) {
         this.currentRoomId = roomId;
+        this.currentRoomData = roomData; // Armazenar dados da sala atual
         
         // Preencher informações da sala
         this.roomTitle.textContent = roomData.title;
@@ -450,6 +453,10 @@ class DevotionalGroupManager {
         this.roomCreator.textContent = `👤 Criado por: ${roomData.createdByName}`;
         this.roomBookChapter.textContent = `${roomData.book} ${roomData.chapter}:${roomData.verse}`;
         this.roomDescription.textContent = roomData.description || 'Sem descrição adicional';
+        
+        // Verificar se o usuário é o criador da sala para mostrar/esconder botão de excluir
+        const isCreator = roomData.createdBy === this.currentUser?.uid;
+        this.updateRoomActions(isCreator);
         
         // Renderizar participantes
         this.renderRoomParticipants(roomData.participants, roomData.participantNames);
@@ -462,6 +469,17 @@ class DevotionalGroupManager {
         
         // Focar no input de mensagem
         setTimeout(() => this.roomChatInput?.focus(), 300);
+    }
+
+    updateRoomActions(isCreator) {
+        // Mostrar/esconder botão de excluir baseado se é criador
+        if (this.deleteRoomBtn) {
+            if (isCreator) {
+                this.deleteRoomBtn.style.display = 'block';
+            } else {
+                this.deleteRoomBtn.style.display = 'none';
+            }
+        }
     }
 
     renderRoomParticipants(participantIds, participantNames) {
@@ -553,7 +571,7 @@ class DevotionalGroupManager {
                 text: messageText,
                 userId: this.currentUser.uid,
                 userName: this.getUserName(),
-                timestamp: serverTimestamp()
+                timestamp: new Date()
             };
 
             await addDoc(collection(db, 'devotionalRooms', this.currentRoomId, 'messages'), messageData);
@@ -570,6 +588,7 @@ class DevotionalGroupManager {
     closeRoomModal() {
         this.roomModal.classList.add('hidden');
         this.currentRoomId = null;
+        this.currentRoomData = null;
         
         // Remover listener de mensagens
         if (this.roomMessageListener) {
@@ -582,6 +601,34 @@ class DevotionalGroupManager {
         if (confirm('Tem certeza que deseja sair da sala?')) {
             this.closeRoomModal();
             // Nota: A sala permanece ativa e você pode retornar a ela através da lista "Salas de Devocional Ativas"
+        }
+    }
+
+    async deleteRoom() {
+        if (!this.currentRoomId || !this.currentRoomData) return;
+
+        // Verificar se o usuário é realmente o criador
+        if (this.currentRoomData.createdBy !== this.currentUser?.uid) {
+            alert('Apenas o criador da sala pode excluí-la!');
+            return;
+        }
+
+        if (confirm(`Tem certeza que deseja excluir a sala "${this.currentRoomData.title}"? Esta ação não pode ser desfeita.`)) {
+            try {
+                // Marcar sala como inativa
+                const roomRef = doc(db, 'devotionalRooms', this.currentRoomId);
+                await updateDoc(roomRef, {
+                    isActive: false,
+                    deletedAt: new Date(),
+                    deletedBy: this.currentUser.uid
+                });
+
+                this.showSuccessNotification(`Sala "${this.currentRoomData.title}" excluída com sucesso!`);
+                this.closeRoomModal();
+            } catch (error) {
+                console.error('Erro ao excluir sala:', error);
+                alert('Erro ao excluir sala. Tente novamente.');
+            }
         }
     }
 
@@ -660,4 +707,4 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         window.devotionalGroup = new DevotionalGroupManager();
     }, 1000);
-}); 
+});
