@@ -8,13 +8,24 @@
 </head>
 <body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
     <header class="bg-white shadow-md">
-        <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0">
+        <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0">
             <h1 class="text-2xl font-serif font-bold text-gray-800">Reflexões da Fé</h1>
-            <div class="flex items-center space-x-4">
-                <span id="userName" class="text-gray-600 text-sm sm:text-base">Carregando...</span>
-                <button id="logoutBtn" class="bg-gray-100 text-gray-700 px-3 sm:px-4 py-2 rounded-lg hover:bg-gray-200 transition duration-200 text-sm sm:text-base">
-                    Sair
-                </button>
+            <div class="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2">
+                <span id="userName" class="text-gray-600 text-sm sm:text-base text-center sm:text-left">Carregando...</span>
+                <div class="flex items-center space-x-2">
+                    <button id="profileBtn" class="bg-blue-100 text-blue-700 px-3 py-2 rounded-lg hover:bg-blue-200 transition duration-200 text-xs sm:text-sm flex items-center space-x-1 sm:space-x-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        <span>Perfil</span>
+                    </button>
+                    <button id="logoutBtn" class="bg-red-100 text-red-700 px-3 py-2 rounded-lg hover:bg-red-200 transition duration-200 text-xs sm:text-sm flex items-center space-x-1 sm:space-x-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        </svg>
+                        <span>Sair</span>
+                    </button>
+                </div>
             </div>
         </div>
     </header>
@@ -444,6 +455,85 @@
         </div>
     </main>
 
+    <!-- Modal de Perfil -->
+    <div id="profileModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+            <!-- Header do Perfil -->
+            <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-t-2xl">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xl font-bold">👤 Meu Perfil</h2>
+                    <button id="closeProfileModal" class="text-white hover:text-gray-200 transition duration-200">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Conteúdo do Perfil -->
+            <div class="p-6 space-y-6">
+                <!-- Avatar e Nome -->
+                <div class="text-center">
+                    <div class="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold">
+                        <span id="profileAvatar">U</span>
+                    </div>
+                    <div id="profileUserTag" class="mb-2">
+                        <!-- Tag do usuário aparece aqui -->
+                    </div>
+                    <h3 id="profileUserName" class="text-xl font-bold text-gray-800">Nome do Usuário</h3>
+                    <p id="profileUserEmail" class="text-gray-600 text-sm">email@exemplo.com</p>
+                </div>
+
+                <!-- Informações do Usuário -->
+                <div class="space-y-4">
+                    <div class="bg-gray-50 p-4 rounded-xl">
+                        <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Informações
+                        </h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Membro desde:</span>
+                                <span id="profileMemberSince" class="font-medium">--</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Salas criadas:</span>
+                                <span id="profileRoomsCreated" class="font-medium">0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Participações:</span>
+                                <span id="profileParticipations" class="font-medium">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Estatísticas de Tags -->
+                    <div class="bg-gray-50 p-4 rounded-xl">
+                        <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+                            </svg>
+                            Status na Comunidade
+                        </h4>
+                        <p class="text-sm text-gray-600">Seu nível de participação na comunidade é determinado pela liderança e reflete sua contribuição espiritual.</p>
+                    </div>
+                </div>
+
+                <!-- Botões de Ação -->
+                <div class="flex space-x-3">
+                    <button id="editProfileBtn" class="flex-1 bg-blue-600 text-white py-3 px-4 rounded-xl hover:bg-blue-700 transition duration-200 font-medium">
+                        ✏️ Editar Perfil
+                    </button>
+                    <button id="closeProfileBtn" class="flex-1 bg-gray-100 text-gray-700 py-3 px-4 rounded-xl hover:bg-gray-200 transition duration-200 font-medium">
+                        Fechar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Chat Widget -->
     <div id="chatWidget" class="fixed bottom-4 right-4 z-50">
         <!-- Botão do Chat (minimizado) -->
@@ -505,6 +595,7 @@
     <script type="module" src="./js/home.js"></script>
     <script type="module" src="./js/chat.js"></script>
     <script type="module" src="./js/devotional-group.js"></script>
+    <script type="module" src="./js/profile.js"></script>
     <script type="module">
         // Importando os módulos Firebase necessários
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
@@ -541,23 +632,71 @@
                         console.log("Dados do usuário encontrados:", userData);
                         
                         if (userData.fullName) {
-                            document.getElementById('userName').textContent = `Olá, ${userData.fullName}`;
+                            const userTag = userData.tag || 'membro'; // Garantir tag padrão
+                            // Sempre exibir com tag
+                            if (window.profileManager) {
+                                window.profileManager.updateUserDisplayWithTag(userData.fullName, userTag);
+                            } else {
+                                // Fallback caso o profileManager não esteja carregado ainda
+                                setTimeout(() => {
+                                    if (window.profileManager) {
+                                        window.profileManager.updateUserDisplayWithTag(userData.fullName, userTag);
+                                    }
+                                }, 500);
+                                document.getElementById('userName').innerHTML = `<span class="text-sm sm:text-base">Olá, ${userData.fullName}</span>`;
+                            }
                         } else {
                             // Se não encontrar o nome, usar o email como fallback
                             const emailName = user.email.split('@')[0];
-                            document.getElementById('userName').textContent = `Olá, ${emailName}`;
+                            const userTag = userData.tag || 'membro'; // Garantir tag padrão
+                            // Sempre exibir com tag
+                            if (window.profileManager) {
+                                window.profileManager.updateUserDisplayWithTag(emailName, userTag);
+                            } else {
+                                // Fallback caso o profileManager não esteja carregado ainda
+                                setTimeout(() => {
+                                    if (window.profileManager) {
+                                        window.profileManager.updateUserDisplayWithTag(emailName, userTag);
+                                    }
+                                }, 500);
+                                document.getElementById('userName').innerHTML = `<span class="text-sm sm:text-base">Olá, ${emailName}</span>`;
+                            }
                         }
                     } else {
                         console.log("Documento do usuário não encontrado, usando email");
                         // Se não encontrar o documento, usar o email como fallback
                         const emailName = user.email.split('@')[0];
-                        document.getElementById('userName').textContent = `Olá, ${emailName}`;
+                        const userTag = 'membro'; // Tag padrão quando não há documento
+                        // Sempre exibir com tag
+                        if (window.profileManager) {
+                            window.profileManager.updateUserDisplayWithTag(emailName, userTag);
+                        } else {
+                            // Fallback caso o profileManager não esteja carregado ainda
+                            setTimeout(() => {
+                                if (window.profileManager) {
+                                    window.profileManager.updateUserDisplayWithTag(emailName, userTag);
+                                }
+                            }, 500);
+                            document.getElementById('userName').innerHTML = `<span class="text-sm sm:text-base">Olá, ${emailName}</span>`;
+                        }
                     }
                 } catch (error) {
                     console.error("Erro ao buscar dados do usuário:", error);
                     // Em caso de erro, usar o email como fallback
                     const emailName = user.email.split('@')[0];
-                    document.getElementById('userName').textContent = `Olá, ${emailName}`;
+                    const userTag = 'membro'; // Tag padrão quando não há documento
+                    // Sempre exibir com tag
+                    if (window.profileManager) {
+                        window.profileManager.updateUserDisplayWithTag(emailName, userTag);
+                    } else {
+                        // Fallback caso o profileManager não esteja carregado ainda
+                        setTimeout(() => {
+                            if (window.profileManager) {
+                                window.profileManager.updateUserDisplayWithTag(emailName, userTag);
+                            }
+                        }, 500);
+                        document.getElementById('userName').innerHTML = `<span class="text-sm sm:text-base">Olá, ${emailName}</span>`;
+                    }
                 }
             } else {
                 console.log("Usuário não está logado, redirecionando...");

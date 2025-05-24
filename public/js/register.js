@@ -1,6 +1,6 @@
 import { auth, db } from './firebase.js';
 import { createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
-import { addDoc, collection } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
+import { addDoc, collection, doc, setDoc } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
 
 document.getElementById('register-form').addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -34,10 +34,11 @@ document.getElementById('register-form').addEventListener('submit', async (event
         console.log('Usuário criado no Auth:', userCredential.user.uid);
         
         // Salvar dados adicionais no Firestore
-        await addDoc(collection(db, "users"), {
+        await setDoc(doc(db, "users", userCredential.user.uid), {
             uid: userCredential.user.uid,
-            fullName: fullName,
             email: email,
+            fullName: fullName,
+            tag: "membro", // Tag padrão para todos os usuários
             createdAt: new Date()
         });
         

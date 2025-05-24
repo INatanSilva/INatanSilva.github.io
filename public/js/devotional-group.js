@@ -107,11 +107,41 @@ class DevotionalGroupManager {
         if (!this.currentUser) return;
 
         try {
+            // Buscar tag do usuário
+            const usersRef = collection(db, "users");
+            const userQuery = query(usersRef, where("uid", "==", this.currentUser.uid));
+            const querySnapshot = await getDocs(userQuery);
+            
+            let userTag = 'membro'; // Tag padrão
+            let userData = null;
+            
+            if (!querySnapshot.empty) {
+                userData = querySnapshot.docs[0].data();
+                userTag = userData.tag || 'membro'; // Garantir que sempre tenha tag
+                
+                // Se o usuário não tem tag no banco, atualizar para adicionar
+                if (!userData.tag) {
+                    const userDocRef = doc(db, "users", this.currentUser.uid);
+                    await updateDoc(userDocRef, { tag: 'membro' });
+                }
+            } else {
+                // Se não existe documento do usuário, criar um básico
+                const userDocRef = doc(db, "users", this.currentUser.uid);
+                await setDoc(userDocRef, {
+                    uid: this.currentUser.uid,
+                    email: this.currentUser.email,
+                    fullName: this.getUserName(),
+                    tag: 'membro',
+                    createdAt: new Date()
+                });
+            }
+
             const presenceRef = doc(db, 'userPresence', this.currentUser.uid);
             await setDoc(presenceRef, {
                 userId: this.currentUser.uid,
                 userEmail: this.currentUser.email,
                 userName: this.getUserName(),
+                userTag: userTag,
                 lastSeen: new Date(),
                 isOnline: true
             }, { merge: true });
@@ -174,6 +204,13 @@ class DevotionalGroupManager {
             if (userId === this.currentUser?.uid) return; // Não mostrar o próprio usuário
             
             const isSelected = this.selectedUsers.has(userId);
+            const userTag = userData.userTag || 'membro';
+            
+            // Usar função estática para renderizar tag
+            const tagHtml = typeof window !== 'undefined' && window.profileManager ? 
+                this.renderUserTagStatic(userTag, 'small') : 
+                '';
+            
             html += `
                 <div class="user-item flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all ${
                     isSelected ? 'bg-blue-50 border-blue-300' : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
@@ -181,7 +218,10 @@ class DevotionalGroupManager {
                     <div class="flex items-center space-x-3">
                         <div class="w-3 h-3 bg-green-500 rounded-full"></div>
                         <div>
-                            <div class="font-medium text-gray-800">${this.escapeHtml(userData.userName)}</div>
+                            <div class="flex items-center space-x-2">
+                                ${tagHtml}
+                                <span class="font-medium text-gray-800">${this.escapeHtml(userData.userName)}</span>
+                            </div>
                             <div class="text-xs text-gray-500">${this.escapeHtml(userData.userEmail)}</div>
                         </div>
                     </div>
@@ -488,12 +528,25 @@ class DevotionalGroupManager {
         let html = '';
         participantNames.forEach((name, index) => {
             const isCurrentUser = participantIds[index] === this.currentUser?.uid;
+            
+            // Buscar tag do participante nos dados de presença
+            let userTag = 'membro'; // Tag padrão
+            const userData = this.onlineUsers.get(participantIds[index]);
+            if (userData && userData.userTag) {
+                userTag = userData.userTag;
+            }
+            
+            const tagHtml = this.renderUserTagStatic(userTag, 'small');
+            
             html += `
                 <div class="flex items-center space-x-3 p-2 rounded-lg ${isCurrentUser ? 'bg-blue-50' : 'bg-gray-50'}">
                     <div class="w-3 h-3 bg-green-500 rounded-full"></div>
-                    <span class="text-sm font-medium text-gray-800">
-                        ${this.escapeHtml(name)}${isCurrentUser ? ' (Você)' : ''}
-                    </span>
+                    <div class="flex items-center space-x-2">
+                        ${tagHtml}
+                        <span class="text-sm font-medium text-gray-800">
+                            ${this.escapeHtml(name)}${isCurrentUser ? ' (Você)' : ''}
+                        </span>
+                    </div>
                 </div>
             `;
         });
@@ -539,6 +592,15 @@ class DevotionalGroupManager {
             const timeString = timestamp ? 
                 timestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
 
+            // Buscar tag do usuário da mensagem
+            let userTag = 'membro';
+            const userData = this.onlineUsers.get(message.userId);
+            if (userData && userData.userTag) {
+                userTag = userData.userTag;
+            }
+            
+            const tagHtml = !isCurrentUser ? this.renderUserTagStatic(userTag, 'small') : '';
+
             html += `
                 <div class="flex ${isCurrentUser ? 'justify-end' : 'justify-start'}">
                     <div class="max-w-xs lg:max-w-md px-4 py-3 rounded-2xl ${
@@ -546,7 +608,12 @@ class DevotionalGroupManager {
                             ? 'bg-blue-600 text-white' 
                             : 'bg-white border border-gray-200'
                     }">
-                        ${!isCurrentUser ? `<div class="text-xs font-medium text-gray-600 mb-1">${this.escapeHtml(message.userName)}</div>` : ''}
+                        ${!isCurrentUser ? `
+                            <div class="flex items-center space-x-2 mb-1">
+                                ${tagHtml}
+                                <span class="text-xs font-medium text-gray-600">${this.escapeHtml(message.userName)}</span>
+                            </div>
+                        ` : ''}
                         <div class="text-sm">${this.escapeHtml(message.text)}</div>
                         ${timeString ? `<div class="text-xs mt-1 ${isCurrentUser ? 'text-blue-100' : 'text-gray-400'}">${timeString}</div>` : ''}
                     </div>
@@ -698,6 +765,49 @@ class DevotionalGroupManager {
                 }
             }, 300);
         }, 5000);
+    }
+
+    renderUserTagStatic(tag, size = 'small') {
+        const tagConfig = {
+            'dono': {
+                label: 'Dono',
+                color: 'bg-gradient-to-r from-yellow-400 to-yellow-600',
+                textColor: 'text-white',
+                icon: '👑'
+            },
+            'obreiro': {
+                label: 'Obreiro(a)',
+                color: 'bg-gradient-to-r from-blue-500 to-blue-600',
+                textColor: 'text-white',
+                icon: '⛪'
+            },
+            'cooperador': {
+                label: 'Cooperador(a)',
+                color: 'bg-gradient-to-r from-green-500 to-green-600',
+                textColor: 'text-white',
+                icon: '🤝'
+            },
+            'membro': {
+                label: 'Membro',
+                color: 'bg-gradient-to-r from-gray-500 to-gray-600',
+                textColor: 'text-white',
+                icon: '👤'
+            }
+        };
+
+        if (!tag || !tagConfig[tag]) {
+            return ''; // Sem tag
+        }
+
+        const config = tagConfig[tag];
+        const sizeClasses = size === 'large' ? 'px-3 py-1 text-sm' : 'px-2 py-1 text-xs';
+        
+        return `
+            <span class="${config.color} ${config.textColor} ${sizeClasses} rounded-full font-bold inline-flex items-center space-x-1 shadow-lg">
+                <span>${config.icon}</span>
+                <span>${config.label}</span>
+            </span>
+        `;
     }
 }
 
