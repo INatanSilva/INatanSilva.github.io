@@ -506,7 +506,7 @@
         // Importando os módulos Firebase necessários
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
-        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
         // Configuração do Firebase
         const firebaseConfig = {
@@ -528,34 +528,33 @@
             if (user) {
                 console.log("Usuário está logado:", user.uid);
                 try {
-                    // Primeiro, vamos buscar todos os documentos da coleção users
+                    // Buscar o documento do usuário pelo UID usando query
                     const usersRef = collection(db, "users");
-                    const querySnapshot = await getDocs(usersRef);
+                    const userQuery = query(usersRef, where("uid", "==", user.uid));
+                    const querySnapshot = await getDocs(userQuery);
                     
-                    let userData = null;
-                    querySnapshot.forEach((doc) => {
-                        console.log("Documento encontrado:", doc.id, doc.data());
-                        // Aqui você pode adicionar a lógica para identificar o usuário correto
-                        // Por exemplo, se você armazenou o email do usuário no documento
-                        if (doc.data().email === user.email) {
-                            userData = doc.data();
-                        }
-                    });
-
-                    if (userData) {
+                    if (!querySnapshot.empty) {
+                        const userData = querySnapshot.docs[0].data();
                         console.log("Dados do usuário encontrados:", userData);
-                        const userName = userData.fullName || userData.nome || userData.name;
                         
-                        if (userName) {
-                            document.getElementById('userName').textContent = `Olá, ${userName}`;
+                        if (userData.fullName) {
+                            document.getElementById('userName').textContent = `Olá, ${userData.fullName}`;
                         } else {
-                            console.log("Nome do usuário não encontrado nos dados:", userData);
+                            // Se não encontrar o nome, usar o email como fallback
+                            const emailName = user.email.split('@')[0];
+                            document.getElementById('userName').textContent = `Olá, ${emailName}`;
                         }
                     } else {
-                        console.log("Dados do usuário não encontrados");
+                        console.log("Documento do usuário não encontrado, usando email");
+                        // Se não encontrar o documento, usar o email como fallback
+                        const emailName = user.email.split('@')[0];
+                        document.getElementById('userName').textContent = `Olá, ${emailName}`;
                     }
                 } catch (error) {
                     console.error("Erro ao buscar dados do usuário:", error);
+                    // Em caso de erro, usar o email como fallback
+                    const emailName = user.email.split('@')[0];
+                    document.getElementById('userName').textContent = `Olá, ${emailName}`;
                 }
             } else {
                 console.log("Usuário não está logado, redirecionando...");
