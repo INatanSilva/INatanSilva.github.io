@@ -25,6 +25,7 @@
                 <a href="#" data-section="inicio" class="nav-link active whitespace-nowrap flex-shrink-0 px-4 sm:px-6 py-3 sm:py-4 text-gray-700 border-b-2 border-blue-600 hover:text-blue-600 transition duration-200 text-sm sm:text-base">Início</a>
                 <a href="#" data-section="reflexoes" class="nav-link whitespace-nowrap flex-shrink-0 px-4 sm:px-6 py-3 sm:py-4 text-gray-500 hover:text-blue-600 transition duration-200 text-sm sm:text-base">Reflexões</a>
                 <a href="#" data-section="oracoes" class="nav-link whitespace-nowrap flex-shrink-0 px-4 sm:px-6 py-3 sm:py-4 text-gray-500 hover:text-blue-600 transition duration-200 text-sm sm:text-base">Orações</a>
+                <a href="#" data-section="devocional-grupo" class="nav-link whitespace-nowrap flex-shrink-0 px-4 sm:px-6 py-3 sm:py-4 text-gray-500 hover:text-blue-600 transition duration-200 text-sm sm:text-base">Devocional Grupo</a>
                 <a href="#" data-section="sobre" class="nav-link whitespace-nowrap flex-shrink-0 px-4 sm:px-6 py-3 sm:py-4 text-gray-500 hover:text-blue-600 transition duration-200 text-sm sm:text-base">Sobre</a>
             </div>
         </div>
@@ -83,6 +84,240 @@
                     <h3 class="text-xl font-bold text-gray-800 mb-4">Oração da Noite</h3>
                     <p class="text-gray-600">Pai celestial, agradeço por este dia que se finda...</p>
                 </article>
+            </div>
+        </section>
+
+        <!-- Seção Devocional Grupo -->
+        <section id="devocional-grupo" class="section hidden">
+            <div class="grid gap-6 lg:grid-cols-3">
+                <!-- Painel de Usuários Online -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-2xl shadow-lg p-6">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <span class="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
+                            Usuários Online
+                        </h3>
+                        <div id="onlineUsers" class="space-y-3 max-h-64 overflow-y-auto">
+                            <div class="text-center text-gray-500 text-sm">Carregando usuários...</div>
+                        </div>
+                        
+                        <div class="mt-6">
+                            <h4 class="text-lg font-semibold text-gray-800 mb-3">Participantes Selecionados</h4>
+                            <div id="selectedUsers" class="space-y-2 min-h-[60px] max-h-32 overflow-y-auto bg-gray-50 rounded-lg p-3">
+                                <div class="text-center text-gray-400 text-sm">Nenhum usuário selecionado</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Formulário de Criação de Devocional -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-2xl shadow-lg p-6">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-6">✨ Criar Devocional em Grupo</h3>
+                        
+                        <form id="devotionalForm" class="space-y-6">
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="devotionalTitle" class="block text-sm font-medium text-gray-700 mb-2">Título do Devocional</label>
+                                    <input 
+                                        type="text" 
+                                        id="devotionalTitle" 
+                                        required
+                                        placeholder="Ex: Fé e Esperança"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    >
+                                </div>
+                                
+                                <div>
+                                    <label for="devotionalBook" class="block text-sm font-medium text-gray-700 mb-2">Livro</label>
+                                    <select 
+                                        id="devotionalBook" 
+                                        required
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    >
+                                        <option value="">Selecione um livro</option>
+                                        
+                                        <!-- Antigo Testamento -->
+                                        <optgroup label="📜 ANTIGO TESTAMENTO">
+                                            <!-- Pentateuco -->
+                                            <optgroup label="— Pentateuco —">
+                                                <option value="Gênesis">Gênesis</option>
+                                                <option value="Êxodo">Êxodo</option>
+                                                <option value="Levítico">Levítico</option>
+                                                <option value="Números">Números</option>
+                                                <option value="Deuteronômio">Deuteronômio</option>
+                                            </optgroup>
+                                            
+                                            <!-- Livros Históricos -->
+                                            <optgroup label="— Livros Históricos —">
+                                                <option value="Josué">Josué</option>
+                                                <option value="Juízes">Juízes</option>
+                                                <option value="Rute">Rute</option>
+                                                <option value="1 Samuel">1 Samuel</option>
+                                                <option value="2 Samuel">2 Samuel</option>
+                                                <option value="1 Reis">1 Reis</option>
+                                                <option value="2 Reis">2 Reis</option>
+                                                <option value="1 Crônicas">1 Crônicas</option>
+                                                <option value="2 Crônicas">2 Crônicas</option>
+                                                <option value="Esdras">Esdras</option>
+                                                <option value="Neemias">Neemias</option>
+                                                <option value="Ester">Ester</option>
+                                            </optgroup>
+                                            
+                                            <!-- Livros Poéticos -->
+                                            <optgroup label="— Livros Poéticos —">
+                                                <option value="Jó">Jó</option>
+                                                <option value="Salmos">Salmos</option>
+                                                <option value="Provérbios">Provérbios</option>
+                                                <option value="Eclesiastes">Eclesiastes</option>
+                                                <option value="Cantares">Cantares</option>
+                                            </optgroup>
+                                            
+                                            <!-- Profetas Maiores -->
+                                            <optgroup label="— Profetas Maiores —">
+                                                <option value="Isaías">Isaías</option>
+                                                <option value="Jeremias">Jeremias</option>
+                                                <option value="Lamentações">Lamentações</option>
+                                                <option value="Ezequiel">Ezequiel</option>
+                                                <option value="Daniel">Daniel</option>
+                                            </optgroup>
+                                            
+                                            <!-- Profetas Menores -->
+                                            <optgroup label="— Profetas Menores —">
+                                                <option value="Oséias">Oséias</option>
+                                                <option value="Joel">Joel</option>
+                                                <option value="Amós">Amós</option>
+                                                <option value="Obadias">Obadias</option>
+                                                <option value="Jonas">Jonas</option>
+                                                <option value="Miquéias">Miquéias</option>
+                                                <option value="Naum">Naum</option>
+                                                <option value="Habacuque">Habacuque</option>
+                                                <option value="Sofonias">Sofonias</option>
+                                                <option value="Ageu">Ageu</option>
+                                                <option value="Zacarias">Zacarias</option>
+                                                <option value="Malaquias">Malaquias</option>
+                                            </optgroup>
+                                        </optgroup>
+                                        
+                                        <!-- Novo Testamento -->
+                                        <optgroup label="✨ NOVO TESTAMENTO">
+                                            <!-- Evangelhos -->
+                                            <optgroup label="— Evangelhos —">
+                                                <option value="Mateus">Mateus</option>
+                                                <option value="Marcos">Marcos</option>
+                                                <option value="Lucas">Lucas</option>
+                                                <option value="João">João</option>
+                                            </optgroup>
+                                            
+                                            <!-- História -->
+                                            <optgroup label="— História —">
+                                                <option value="Atos">Atos</option>
+                                            </optgroup>
+                                            
+                                            <!-- Cartas Paulinas -->
+                                            <optgroup label="— Cartas de Paulo —">
+                                                <option value="Romanos">Romanos</option>
+                                                <option value="1 Coríntios">1 Coríntios</option>
+                                                <option value="2 Coríntios">2 Coríntios</option>
+                                                <option value="Gálatas">Gálatas</option>
+                                                <option value="Efésios">Efésios</option>
+                                                <option value="Filipenses">Filipenses</option>
+                                                <option value="Colossenses">Colossenses</option>
+                                                <option value="1 Tessalonicenses">1 Tessalonicenses</option>
+                                                <option value="2 Tessalonicenses">2 Tessalonicenses</option>
+                                                <option value="1 Timóteo">1 Timóteo</option>
+                                                <option value="2 Timóteo">2 Timóteo</option>
+                                                <option value="Tito">Tito</option>
+                                                <option value="Filemom">Filemom</option>
+                                            </optgroup>
+                                            
+                                            <!-- Cartas Gerais -->
+                                            <optgroup label="— Cartas Gerais —">
+                                                <option value="Hebreus">Hebreus</option>
+                                                <option value="Tiago">Tiago</option>
+                                                <option value="1 Pedro">1 Pedro</option>
+                                                <option value="2 Pedro">2 Pedro</option>
+                                                <option value="1 João">1 João</option>
+                                                <option value="2 João">2 João</option>
+                                                <option value="3 João">3 João</option>
+                                                <option value="Judas">Judas</option>
+                                            </optgroup>
+                                            
+                                            <!-- Profecia -->
+                                            <optgroup label="— Profecia —">
+                                                <option value="Apocalipse">Apocalipse</option>
+                                            </optgroup>
+                                        </optgroup>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="devotionalChapter" class="block text-sm font-medium text-gray-700 mb-2">Capítulo</label>
+                                    <input 
+                                        type="number" 
+                                        id="devotionalChapter" 
+                                        required
+                                        min="1"
+                                        placeholder="Ex: 3"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    >
+                                </div>
+                                
+                                <div>
+                                    <label for="devotionalVerse" class="block text-sm font-medium text-gray-700 mb-2">Versículo(s)</label>
+                                    <input 
+                                        type="text" 
+                                        id="devotionalVerse" 
+                                        required
+                                        placeholder="Ex: 16 ou 1-5"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    >
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="devotionalDescription" class="block text-sm font-medium text-gray-700 mb-2">Descrição do Tema (Opcional)</label>
+                                <textarea 
+                                    id="devotionalDescription" 
+                                    rows="3"
+                                    placeholder="Descreva brevemente o foco do devocional..."
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                ></textarea>
+                            </div>
+
+                            <div class="flex flex-col sm:flex-row gap-4">
+                                <button 
+                                    type="submit" 
+                                    id="createDevotionalBtn"
+                                    class="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 px-6 rounded-xl hover:from-blue-700 hover:to-blue-800 transition duration-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                                    disabled
+                                >
+                                    🙏 Criar Sala de Devocional
+                                </button>
+                                
+                                <button 
+                                    type="button" 
+                                    id="clearSelectionBtn"
+                                    class="sm:w-auto bg-gray-100 text-gray-700 py-3 px-6 rounded-xl hover:bg-gray-200 transition duration-300"
+                                >
+                                    Limpar Seleção
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Salas Ativas -->
+            <div class="mt-8">
+                <h3 class="text-2xl font-bold text-gray-800 mb-6">🕊️ Salas de Devocional Ativas</h3>
+                <div id="activeRooms" class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    <div class="text-center text-gray-500 p-8">
+                        Nenhuma sala ativa no momento
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -175,6 +410,7 @@
 
     <script type="module" src="./js/home.js"></script>
     <script type="module" src="./js/chat.js"></script>
+    <script type="module" src="./js/devotional-group.js"></script>
     <script type="module">
         // Importando os módulos Firebase necessários
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
