@@ -94,6 +94,31 @@ class PostsManager {
                 });
             }
         });
+
+        // Event listeners para formulários de comentário
+        document.querySelectorAll('.comment-form').forEach(form => {
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const postId = e.currentTarget.dataset.postId;
+                const input = e.currentTarget.querySelector('input[type="text"]');
+                const content = input.value.trim();
+                if (content) {
+                    this.addComment(postId, content);
+                    input.value = '';
+                }
+            });
+            
+            // Adicionar evento para envio com Enter
+            const input = form.querySelector('input[type="text"]');
+            if (input) {
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        form.dispatchEvent(new Event('submit'));
+                    }
+                });
+            }
+        });
     }
 
     openCreatePostModal() {
@@ -231,8 +256,10 @@ class PostsManager {
                     </div>
                     <div class="flex-1 min-w-0">
                         <div class="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2 mb-1">
-                            ${tagHtml}
-                            <h3 class="font-semibold text-gray-800 text-sm sm:text-base truncate">${this.escapeHtml(post.authorName)}</h3>
+                            <div class="flex items-center space-x-2">
+                                ${tagHtml}
+                                <h3 class="font-semibold text-gray-800 text-sm sm:text-base truncate">${this.escapeHtml(post.authorName)}</h3>
+                            </div>
                         </div>
                         <p class="text-xs sm:text-sm text-gray-500">${timeAgo}</p>
                     </div>
@@ -293,19 +320,9 @@ class PostsManager {
                                 <span class="text-xs sm:text-sm font-medium">Amei</span>
                             </button>
                         </div>
-
-                        <button 
-                            class="comment-btn flex items-center space-x-2 px-3 sm:px-4 py-2 rounded-lg hover:bg-gray-100 transition duration-200 justify-center sm:justify-start"
-                            data-post-id="${post.id}"
-                        >
-                            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.581 8-8 8a9.863 9.863 0 01-4.255-.949L5 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 3.581-8 8-8s8 3.582 8 8z"></path>
-                            </svg>
-                            <span class="text-xs sm:text-sm font-medium text-gray-600">Comentar</span>
-                        </button>
                     </div>
 
-                    <!-- Seção de Comentários (inicialmente oculta) -->
+                    <!-- Seção de Comentários -->
                     <div id="comments-${post.id}" class="mt-4 pt-4 border-t border-gray-100">
                         <!-- Primeiros 3 comentários visíveis -->
                         <div id="comments-preview-${post.id}" class="space-y-3 mb-4"></div>
@@ -359,27 +376,13 @@ class PostsManager {
             });
         });
 
-        // Event listeners para formulários de comentário
-        document.querySelectorAll('.comment-form').forEach(form => {
-            form.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const postId = e.currentTarget.dataset.postId;
-                const input = e.currentTarget.querySelector('input[type="text"]');
-                const content = input.value.trim();
-                if (content) {
-                    this.addComment(postId, content);
-                    input.value = '';
-                }
-            });
-            
-            // Adicionar evento para envio com Enter
-            const input = form.querySelector('input[type="text"]');
-            if (input) {
-                input.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        form.dispatchEvent(new Event('submit'));
-                    }
+        // Event listeners para botões de ver mais/menos comentários
+        document.querySelectorAll('[id^="comments-toggle-"]').forEach(toggleDiv => {
+            const button = toggleDiv.querySelector('button');
+            if (button) {
+                button.addEventListener('click', (e) => {
+                    const postId = toggleDiv.id.replace('comments-toggle-', '');
+                    this.toggleAllComments(postId);
                 });
             }
         });
@@ -516,8 +519,10 @@ class PostsManager {
                 </div>
                 <div class="flex-1 min-w-0">
                     <div class="flex flex-col space-y-1 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-2 mb-1">
-                        ${tagHtml}
-                        <span class="font-medium text-gray-800 text-xs sm:text-sm truncate">${this.escapeHtml(comment.authorName)}</span>
+                        <div class="flex items-center space-x-2">
+                            ${tagHtml}
+                            <span class="font-medium text-gray-800 text-xs sm:text-sm truncate">${this.escapeHtml(comment.authorName)}</span>
+                        </div>
                         <span class="text-xs text-gray-500">${timeAgo}</span>
                     </div>
                     <p class="text-xs sm:text-sm text-gray-700 leading-relaxed break-words">${this.escapeHtml(comment.content)}</p>
@@ -609,7 +614,7 @@ class PostsManager {
         }
         
         return `
-            <span class="${config.color} ${config.textColor} ${sizeClasses} rounded-full font-bold inline-flex items-center space-x-1 shadow-sm">
+            <span class="${config.color} ${config.textColor} ${sizeClasses} rounded-full font-bold inline-flex items-center space-x-1 shadow-sm w-auto flex-shrink-0">
                 <span class="${iconSize}">${config.icon}</span>
                 <span class="${textSize}">${config.label}</span>
             </span>
