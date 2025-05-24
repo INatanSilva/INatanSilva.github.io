@@ -321,6 +321,97 @@
             </div>
         </section>
 
+        <!-- Modal de Chat da Sala de Devocional -->
+        <div id="devotionalRoomModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-2 sm:p-4">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-full sm:h-5/6 flex flex-col">
+                <!-- Header da Sala -->
+                <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 sm:p-6 rounded-t-2xl">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h2 id="roomTitle" class="text-xl sm:text-2xl font-bold mb-2">Título da Sala</h2>
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-1 sm:space-y-0">
+                                <span id="roomPassage" class="text-blue-100 text-sm">📖 Livro 1:1</span>
+                                <span id="roomCreator" class="text-blue-100 text-sm">👤 Criado por: Nome</span>
+                            </div>
+                        </div>
+                        <button id="closeRoomModal" class="text-white hover:text-gray-200 transition duration-200">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Conteúdo da Sala -->
+                <div class="flex flex-col lg:flex-row flex-1 overflow-hidden">
+                    <!-- Chat da Sala -->
+                    <div class="flex-1 flex flex-col">
+                        <!-- Área de Mensagens -->
+                        <div id="roomMessages" class="flex-1 p-3 sm:p-6 overflow-y-auto bg-gray-50 space-y-4">
+                            <div class="text-center text-gray-500 p-8">
+                                <div class="mb-4">🙏</div>
+                                <p>Bem-vindos à sala de devocional!</p>
+                                <p class="text-sm mt-2">Compartilhem suas reflexões e orem juntos.</p>
+                            </div>
+                        </div>
+
+                        <!-- Área de Envio -->
+                        <div class="p-3 sm:p-4 border-t border-gray-200 bg-white">
+                            <form id="roomChatForm" class="flex space-x-3">
+                                <input 
+                                    type="text" 
+                                    id="roomChatInput" 
+                                    placeholder="Compartilhe sua reflexão..." 
+                                    class="flex-1 px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                    maxlength="1000"
+                                >
+                                <button 
+                                    type="submit" 
+                                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl transition duration-200 flex items-center justify-center"
+                                >
+                                    <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar de Participantes -->
+                    <div class="w-full lg:w-80 border-t lg:border-t-0 lg:border-l border-gray-200 bg-white">
+                        <div class="p-3 sm:p-4 border-b border-gray-200">
+                            <h3 class="font-semibold text-gray-800 flex items-center text-sm sm:text-base">
+                                <span class="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
+                                Participantes
+                            </h3>
+                        </div>
+                        <div id="roomParticipants" class="p-3 sm:p-4 space-y-3 max-h-32 lg:max-h-96 overflow-y-auto">
+                            <!-- Participantes serão carregados aqui -->
+                        </div>
+
+                        <!-- Informações da Passagem -->
+                        <div class="p-3 sm:p-4 border-t border-gray-200">
+                            <h4 class="font-semibold text-gray-800 mb-3 text-sm sm:text-base">📖 Passagem do Dia</h4>
+                            <div id="roomPassageDetails" class="bg-gray-50 p-3 sm:p-4 rounded-lg">
+                                <div class="text-xs sm:text-sm text-gray-600 mb-2" id="roomBookChapter">Livro 1:1</div>
+                                <div class="text-xs sm:text-sm text-gray-800" id="roomDescription">Descrição do devocional...</div>
+                            </div>
+                        </div>
+
+                        <!-- Ações da Sala -->
+                        <div class="p-3 sm:p-4 border-t border-gray-200 space-y-2">
+                            <button id="leaveRoomBtn" class="w-full bg-red-100 text-red-700 py-2 px-4 rounded-lg hover:bg-red-200 transition duration-200 text-xs sm:text-sm">
+                                Sair da Sala
+                            </button>
+                            <button id="shareRoomBtn" class="w-full bg-gray-100 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-200 transition duration-200 text-xs sm:text-sm">
+                                Compartilhar Sala
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Seção Sobre -->
         <section id="sobre" class="section hidden">
             <div class="bg-white p-8 rounded-2xl shadow-lg max-w-2xl mx-auto">

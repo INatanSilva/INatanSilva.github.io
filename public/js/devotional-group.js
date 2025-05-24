@@ -22,6 +22,8 @@ class DevotionalGroupManager {
         this.onlineUsers = new Map();
         this.activeRooms = new Map();
         this.currentUser = null;
+        this.currentRoomId = null;
+        this.roomMessageListener = null;
         
         this.initializeElements();
         this.setupEventListeners();
@@ -36,6 +38,21 @@ class DevotionalGroupManager {
         this.createBtn = document.getElementById('createDevotionalBtn');
         this.clearBtn = document.getElementById('clearSelectionBtn');
         this.activeRoomsContainer = document.getElementById('activeRooms');
+        
+        // Elementos do modal da sala
+        this.roomModal = document.getElementById('devotionalRoomModal');
+        this.roomTitle = document.getElementById('roomTitle');
+        this.roomPassage = document.getElementById('roomPassage');
+        this.roomCreator = document.getElementById('roomCreator');
+        this.roomMessages = document.getElementById('roomMessages');
+        this.roomChatForm = document.getElementById('roomChatForm');
+        this.roomChatInput = document.getElementById('roomChatInput');
+        this.roomParticipants = document.getElementById('roomParticipants');
+        this.roomBookChapter = document.getElementById('roomBookChapter');
+        this.roomDescription = document.getElementById('roomDescription');
+        this.closeRoomModalBtn = document.getElementById('closeRoomModal');
+        this.leaveRoomBtn = document.getElementById('leaveRoomBtn');
+        this.shareRoomBtn = document.getElementById('shareRoomBtn');
     }
 
     setupEventListeners() {
@@ -44,6 +61,19 @@ class DevotionalGroupManager {
         
         // Botão limpar seleção
         this.clearBtn?.addEventListener('click', () => this.clearSelection());
+
+        // Modal da sala
+        this.closeRoomModalBtn?.addEventListener('click', () => this.closeRoomModal());
+        this.roomChatForm?.addEventListener('submit', (e) => this.sendRoomMessage(e));
+        this.leaveRoomBtn?.addEventListener('click', () => this.leaveRoom());
+        this.shareRoomBtn?.addEventListener('click', () => this.shareRoom());
+
+        // Fechar modal ao clicar fora
+        this.roomModal?.addEventListener('click', (e) => {
+            if (e.target === this.roomModal) {
+                this.closeRoomModal();
+            }
+        });
 
         // Monitor mudanças no auth
         this.auth.onAuthStateChanged((user) => {
@@ -233,7 +263,6 @@ class DevotionalGroupManager {
             return;
         }
 
-        const formData = new FormData(this.devotionalForm);
         const title = document.getElementById('devotionalTitle').value;
         const book = document.getElementById('devotionalBook').value;
         const chapter = document.getElementById('devotionalChapter').value;
@@ -241,6 +270,16 @@ class DevotionalGroupManager {
         const description = document.getElementById('devotionalDescription').value;
 
         try {
+            // Incluir o criador na lista de participantes
+            const allParticipants = [this.currentUser.uid, ...Array.from(this.selectedUsers)];
+            const allParticipantNames = [
+                this.getUserName(),
+                ...Array.from(this.selectedUsers).map(userId => {
+                    const userData = this.onlineUsers.get(userId);
+                    return userData ? userData.userName : 'Usuário';
+                })
+            ];
+
             // Criar sala de devocional
             const roomData = {
                 title,
@@ -250,14 +289,10 @@ class DevotionalGroupManager {
                 description,
                 createdBy: this.currentUser.uid,
                 createdByName: this.getUserName(),
-                participants: Array.from(this.selectedUsers),
-                participantNames: Array.from(this.selectedUsers).map(userId => {
-                    const userData = this.onlineUsers.get(userId);
-                    return userData ? userData.userName : 'Usuário';
-                }),
+                participants: allParticipants,
+                participantNames: allParticipantNames,
                 createdAt: serverTimestamp(),
-                isActive: true,
-                messages: []
+                isActive: true
             };
 
             const roomRef = await addDoc(collection(db, 'devotionalRooms'), roomData);
@@ -266,10 +301,8 @@ class DevotionalGroupManager {
             this.devotionalForm.reset();
             this.clearSelection();
             
-            alert('Sala de devocional criada com sucesso!');
-            
             // Abrir sala criada
-            this.openDevotionalRoom(roomRef.id, roomData);
+            this.openDevotionalRoom(roomRef.id, { id: roomRef.id, ...roomData });
             
         } catch (error) {
             console.error('Erro ao criar sala:', error);
@@ -309,7 +342,7 @@ class DevotionalGroupManager {
 
         let html = '';
         this.activeRooms.forEach((room, roomId) => {
-            const canJoin = room.participants.includes(this.currentUser?.uid) || room.createdBy === this.currentUser?.uid;
+            const canJoin = room.participants.includes(this.currentUser?.uid);
             
             html += `
                 <div class="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition duration-300">
@@ -320,26 +353,26 @@ class DevotionalGroupManager {
                     
                     <div class="space-y-2 mb-4">
                         <p class="text-sm text-gray-600">
-                            <strong>Passagem:</strong> ${this.escapeHtml(room.book)} ${room.chapter}:${this.escapeHtml(room.verse)}
+                            <strong>📖 Passagem:</strong> ${this.escapeHtml(room.book)} ${room.chapter}:${this.escapeHtml(room.verse)}
                         </p>
                         <p class="text-sm text-gray-600">
-                            <strong>Criado por:</strong> ${this.escapeHtml(room.createdByName)}
+                            <strong>👤 Criado por:</strong> ${this.escapeHtml(room.createdByName)}
                         </p>
                         <p class="text-sm text-gray-600">
-                            <strong>Participantes:</strong> ${room.participantNames.join(', ')}
+                            <strong>👥 Participantes:</strong> ${room.participantNames.length} pessoas
                         </p>
-                        ${room.description ? `<p class="text-sm text-gray-600">${this.escapeHtml(room.description)}</p>` : ''}
+                        ${room.description ? `<p class="text-sm text-gray-600 italic">"${this.escapeHtml(room.description)}"</p>` : ''}
                     </div>
                     
                     <button 
-                        class="w-full py-2 px-4 rounded-lg text-sm font-medium transition duration-200 ${
+                        class="w-full py-3 px-4 rounded-lg text-sm font-medium transition duration-200 ${
                             canJoin 
-                                ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                                ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800' 
                                 : 'bg-gray-100 text-gray-500 cursor-not-allowed'
                         }"
                         ${canJoin ? `onclick="window.devotionalGroup.openDevotionalRoom('${roomId}', ${JSON.stringify(room).replace(/"/g, '&quot;')})"` : 'disabled'}
                     >
-                        ${canJoin ? 'Entrar na Sala' : 'Sala Privada'}
+                        ${canJoin ? '🚪 Entrar na Sala' : '🔒 Sala Privada'}
                     </button>
                 </div>
             `;
@@ -349,12 +382,167 @@ class DevotionalGroupManager {
     }
 
     openDevotionalRoom(roomId, roomData) {
-        // Por enquanto, apenas mostrar um alert com os detalhes
-        // Futuramente, isso pode abrir um modal ou redirecionar para uma página específica
-        alert(`Abrindo sala: ${roomData.title}\nPassagem: ${roomData.book} ${roomData.chapter}:${roomData.verse}`);
+        this.currentRoomId = roomId;
         
-        // Aqui você pode implementar a lógica para abrir a sala de devocional
-        // Por exemplo, abrir um modal com chat específico da sala
+        // Preencher informações da sala
+        this.roomTitle.textContent = roomData.title;
+        this.roomPassage.textContent = `📖 ${roomData.book} ${roomData.chapter}:${roomData.verse}`;
+        this.roomCreator.textContent = `👤 Criado por: ${roomData.createdByName}`;
+        this.roomBookChapter.textContent = `${roomData.book} ${roomData.chapter}:${roomData.verse}`;
+        this.roomDescription.textContent = roomData.description || 'Sem descrição adicional';
+        
+        // Renderizar participantes
+        this.renderRoomParticipants(roomData.participants, roomData.participantNames);
+        
+        // Abrir modal
+        this.roomModal.classList.remove('hidden');
+        
+        // Carregar mensagens da sala
+        this.loadRoomMessages(roomId);
+        
+        // Focar no input de mensagem
+        setTimeout(() => this.roomChatInput?.focus(), 300);
+    }
+
+    renderRoomParticipants(participantIds, participantNames) {
+        if (!this.roomParticipants) return;
+
+        let html = '';
+        participantNames.forEach((name, index) => {
+            const isCurrentUser = participantIds[index] === this.currentUser?.uid;
+            html += `
+                <div class="flex items-center space-x-3 p-2 rounded-lg ${isCurrentUser ? 'bg-blue-50' : 'bg-gray-50'}">
+                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                    <span class="text-sm font-medium text-gray-800">
+                        ${this.escapeHtml(name)}${isCurrentUser ? ' (Você)' : ''}
+                    </span>
+                </div>
+            `;
+        });
+
+        this.roomParticipants.innerHTML = html;
+    }
+
+    loadRoomMessages(roomId) {
+        // Remover listener anterior se existir
+        if (this.roomMessageListener) {
+            this.roomMessageListener();
+        }
+
+        const messagesQuery = query(
+            collection(db, 'devotionalRooms', roomId, 'messages'),
+            orderBy('timestamp', 'asc')
+        );
+
+        this.roomMessageListener = onSnapshot(messagesQuery, (snapshot) => {
+            this.renderRoomMessages(snapshot);
+        });
+    }
+
+    renderRoomMessages(snapshot) {
+        if (!this.roomMessages) return;
+
+        if (snapshot.empty) {
+            this.roomMessages.innerHTML = `
+                <div class="text-center text-gray-500 p-8">
+                    <div class="mb-4">🙏</div>
+                    <p>Bem-vindos à sala de devocional!</p>
+                    <p class="text-sm mt-2">Compartilhem suas reflexões e orem juntos.</p>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+        snapshot.forEach((doc) => {
+            const message = doc.data();
+            const isCurrentUser = message.userId === this.currentUser?.uid;
+            const timestamp = message.timestamp?.toDate();
+            const timeString = timestamp ? 
+                timestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
+
+            html += `
+                <div class="flex ${isCurrentUser ? 'justify-end' : 'justify-start'}">
+                    <div class="max-w-xs lg:max-w-md px-4 py-3 rounded-2xl ${
+                        isCurrentUser 
+                            ? 'bg-blue-600 text-white' 
+                            : 'bg-white border border-gray-200'
+                    }">
+                        ${!isCurrentUser ? `<div class="text-xs font-medium text-gray-600 mb-1">${this.escapeHtml(message.userName)}</div>` : ''}
+                        <div class="text-sm">${this.escapeHtml(message.text)}</div>
+                        ${timeString ? `<div class="text-xs mt-1 ${isCurrentUser ? 'text-blue-100' : 'text-gray-400'}">${timeString}</div>` : ''}
+                    </div>
+                </div>
+            `;
+        });
+
+        this.roomMessages.innerHTML = html;
+        
+        // Scroll para a última mensagem
+        this.roomMessages.scrollTop = this.roomMessages.scrollHeight;
+    }
+
+    async sendRoomMessage(e) {
+        e.preventDefault();
+        
+        const messageText = this.roomChatInput.value.trim();
+        if (!messageText || !this.currentRoomId) return;
+
+        try {
+            const messageData = {
+                text: messageText,
+                userId: this.currentUser.uid,
+                userName: this.getUserName(),
+                timestamp: serverTimestamp()
+            };
+
+            await addDoc(collection(db, 'devotionalRooms', this.currentRoomId, 'messages'), messageData);
+            
+            // Limpar input
+            this.roomChatInput.value = '';
+            
+        } catch (error) {
+            console.error('Erro ao enviar mensagem:', error);
+            alert('Erro ao enviar mensagem. Tente novamente.');
+        }
+    }
+
+    closeRoomModal() {
+        this.roomModal.classList.add('hidden');
+        this.currentRoomId = null;
+        
+        // Remover listener de mensagens
+        if (this.roomMessageListener) {
+            this.roomMessageListener();
+            this.roomMessageListener = null;
+        }
+    }
+
+    leaveRoom() {
+        if (confirm('Tem certeza que deseja sair da sala?')) {
+            this.closeRoomModal();
+        }
+    }
+
+    shareRoom() {
+        if (this.currentRoomId) {
+            const roomData = this.activeRooms.get(this.currentRoomId);
+            if (roomData) {
+                const shareText = `Venha participar do devocional "${roomData.title}" - ${roomData.book} ${roomData.chapter}:${roomData.verse}`;
+                
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'Devocional em Grupo',
+                        text: shareText
+                    });
+                } else {
+                    // Fallback: copiar para clipboard
+                    navigator.clipboard.writeText(shareText).then(() => {
+                        alert('Link copiado para a área de transferência!');
+                    });
+                }
+            }
+        }
     }
 
     getUserName() {
