@@ -49,22 +49,29 @@
                 Carregando versículo...
             </div>
 
-            <div class="grid gap-6 sm:gap-8 md:grid-cols-2">
-                <article class="bg-white rounded-2xl shadow-lg overflow-hidden transform hover:scale-[1.02] transition duration-300">
-                    <div class="p-5 sm:p-6">
-                        <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Simplicidade e Fé</h2>
-                        <div class="text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4">17 Fevereiro, 2025</div>
-                        <p class="text-sm sm:text-base text-gray-600">A verdadeira fé se manifesta nas coisas simples do dia a dia...</p>
-                    </div>
-                </article>
+            <!-- Sistema de Postagens -->
+            <div class="bg-white rounded-2xl shadow-lg p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+                        <span class="mr-2">✨</span>
+                        Compartilhe suas Reflexões
+                    </h2>
+                    <button id="createPostBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200 flex items-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        <span>Nova Postagem</span>
+                    </button>
+                </div>
 
-                <article class="bg-white rounded-2xl shadow-lg overflow-hidden transform hover:scale-[1.02] transition duration-300">
-                    <div class="p-5 sm:p-6">
-                        <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-2">O Poder da Oração</h2>
-                        <div class="text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4">16 Fevereiro, 2025</div>
-                        <p class="text-sm sm:text-base text-gray-600">Quando oramos, abrimos nosso coração para uma conexão profunda...</p>
+                <!-- Lista de Postagens -->
+                <div id="postsContainer" class="space-y-6">
+                    <div class="text-center text-gray-500 py-8">
+                        <div class="mb-4 text-4xl">📝</div>
+                        <p>Seja o primeiro a compartilhar uma reflexão!</p>
+                        <p class="text-sm mt-2">Clique em "Nova Postagem" para começar</p>
                     </div>
-                </article>
+                </div>
             </div>
         </section>
 
@@ -455,6 +462,82 @@
         </div>
     </main>
 
+    <!-- Modal de Criar Postagem -->
+    <div id="createPostModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl">
+            <!-- Header do Modal -->
+            <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-t-2xl">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xl font-bold flex items-center">
+                        <span class="mr-2">✨</span>
+                        Nova Reflexão
+                    </h2>
+                    <button id="closeCreatePostModal" class="text-white hover:text-gray-200 transition duration-200">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Conteúdo do Modal -->
+            <form id="createPostForm" class="p-6 space-y-6">
+                <div>
+                    <label for="postTitle" class="block text-sm font-medium text-gray-700 mb-2">Título da Reflexão</label>
+                    <input 
+                        type="text" 
+                        id="postTitle" 
+                        required
+                        placeholder="Ex: A importância da gratidão"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                </div>
+
+                <div>
+                    <label for="postContent" class="block text-sm font-medium text-gray-700 mb-2">Sua Reflexão</label>
+                    <textarea 
+                        id="postContent" 
+                        required
+                        rows="6"
+                        placeholder="Compartilhe seus pensamentos, experiências espirituais, versículos favoritos ou reflexões do dia..."
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    ></textarea>
+                </div>
+
+                <div>
+                    <label for="postVerse" class="block text-sm font-medium text-gray-700 mb-2">Versículo Relacionado (Opcional)</label>
+                    <input 
+                        type="text" 
+                        id="postVerse" 
+                        placeholder="Ex: João 3:16 ou Salmos 23:1"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                </div>
+
+                <!-- Botões -->
+                <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
+                    <button 
+                        type="submit" 
+                        class="flex-1 bg-blue-600 text-white py-3 px-6 rounded-xl hover:bg-blue-700 transition duration-300 font-medium flex items-center justify-center space-x-2"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                        </svg>
+                        <span>Compartilhar Reflexão</span>
+                    </button>
+                    
+                    <button 
+                        type="button" 
+                        id="cancelCreatePost"
+                        class="sm:w-auto bg-gray-100 text-gray-700 py-3 px-6 rounded-xl hover:bg-gray-200 transition duration-300"
+                    >
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Modal de Perfil -->
     <div id="profileModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
@@ -596,6 +679,7 @@
     <script type="module" src="./js/chat.js"></script>
     <script type="module" src="./js/devotional-group.js"></script>
     <script type="module" src="./js/profile.js"></script>
+    <script type="module" src="./js/posts.js"></script>
     <script type="module">
         // Importando os módulos Firebase necessários
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
