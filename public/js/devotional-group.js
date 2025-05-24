@@ -269,6 +269,10 @@ class DevotionalGroupManager {
         const verse = document.getElementById('devotionalVerse').value;
         const description = document.getElementById('devotionalDescription').value;
 
+        // Desabilitar botão durante criação
+        this.createBtn.disabled = true;
+        this.createBtn.textContent = 'Criando sala...';
+
         try {
             // Incluir o criador na lista de participantes
             const allParticipants = [this.currentUser.uid, ...Array.from(this.selectedUsers)];
@@ -301,12 +305,19 @@ class DevotionalGroupManager {
             this.devotionalForm.reset();
             this.clearSelection();
             
-            // Abrir sala criada
+            // Abrir sala criada automaticamente
             this.openDevotionalRoom(roomRef.id, { id: roomRef.id, ...roomData });
+            
+            // Mostrar notificação de sucesso de forma elegante
+            this.showSuccessNotification(`Sala "${title}" criada com sucesso! Todos os participantes podem vê-la em "Salas de Devocional Ativas".`);
             
         } catch (error) {
             console.error('Erro ao criar sala:', error);
             alert('Erro ao criar sala de devocional. Tente novamente.');
+        } finally {
+            // Reabilitar botão
+            this.createBtn.disabled = false;
+            this.createBtn.textContent = '🙏 Criar Sala de Devocional';
         }
     }
 
@@ -340,15 +351,39 @@ class DevotionalGroupManager {
             return;
         }
 
-        let html = '';
+        // Filtrar salas onde o usuário é participante
+        const userRooms = [];
         this.activeRooms.forEach((room, roomId) => {
-            const canJoin = room.participants.includes(this.currentUser?.uid);
+            if (room.participants.includes(this.currentUser?.uid)) {
+                userRooms.push({ id: roomId, ...room });
+            }
+        });
+
+        if (userRooms.length === 0) {
+            this.activeRoomsContainer.innerHTML = `
+                <div class="text-center text-gray-500 p-8">
+                    <div class="mb-4">🕊️</div>
+                    <p>Você não está participando de nenhuma sala no momento</p>
+                    <p class="text-sm mt-2">Crie uma nova sala ou aguarde ser convidado para uma</p>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+        userRooms.forEach((room) => {
+            const isCreator = room.createdBy === this.currentUser?.uid;
             
             html += `
-                <div class="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition duration-300">
+                <div class="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition duration-300 border-l-4 ${
+                    isCreator ? 'border-blue-500' : 'border-green-500'
+                }">
                     <div class="flex items-start justify-between mb-4">
                         <h4 class="text-lg font-bold text-gray-800">${this.escapeHtml(room.title)}</h4>
-                        <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Ativa</span>
+                        <div class="flex flex-col items-end space-y-1">
+                            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Ativa</span>
+                            ${isCreator ? '<span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">Criador</span>' : '<span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-full">Participante</span>'}
+                        </div>
                     </div>
                     
                     <div class="space-y-2 mb-4">
@@ -365,14 +400,10 @@ class DevotionalGroupManager {
                     </div>
                     
                     <button 
-                        class="w-full py-3 px-4 rounded-lg text-sm font-medium transition duration-200 ${
-                            canJoin 
-                                ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800' 
-                                : 'bg-gray-100 text-gray-500 cursor-not-allowed'
-                        }"
-                        ${canJoin ? `onclick="window.devotionalGroup.openDevotionalRoom('${roomId}', ${JSON.stringify(room).replace(/"/g, '&quot;')})"` : 'disabled'}
+                        class="w-full py-3 px-4 rounded-lg text-sm font-medium transition duration-200 bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800"
+                        onclick="window.devotionalGroup.openDevotionalRoom('${room.id}', ${JSON.stringify(room).replace(/"/g, '&quot;')})"
                     >
-                        ${canJoin ? '🚪 Entrar na Sala' : '🔒 Sala Privada'}
+                        🚪 Entrar na Sala
                     </button>
                 </div>
             `;
@@ -521,6 +552,7 @@ class DevotionalGroupManager {
     leaveRoom() {
         if (confirm('Tem certeza que deseja sair da sala?')) {
             this.closeRoomModal();
+            // Nota: A sala permanece ativa e você pode retornar a ela através da lista "Salas de Devocional Ativas"
         }
     }
 
@@ -559,6 +591,37 @@ class DevotionalGroupManager {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+
+    showSuccessNotification(message) {
+        // Criar elemento de notificação
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-50 transform translate-x-full transition-transform duration-300';
+        notification.innerHTML = `
+            <div class="flex items-center space-x-3">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <span class="text-sm font-medium">${message}</span>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Animar entrada
+        setTimeout(() => {
+            notification.classList.remove('translate-x-full');
+        }, 100);
+        
+        // Auto remover após 5 segundos
+        setTimeout(() => {
+            notification.classList.add('translate-x-full');
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, 5000);
     }
 }
 
