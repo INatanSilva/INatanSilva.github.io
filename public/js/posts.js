@@ -9,6 +9,7 @@ import {
     doc,
     updateDoc,
     getDocs,
+    getDoc,
     deleteDoc,
     arrayUnion,
     arrayRemove,
@@ -454,7 +455,7 @@ class PostsManager {
             return;
         }
 
-        console.log('Adicionando comentário:', { postId, content });
+        console.log('🔥 Adicionando comentário:', { postId, content });
 
         try {
             const userProfile = await this.loadUserProfile(this.currentUser.uid);
@@ -468,27 +469,81 @@ class PostsManager {
                 createdAt: new Date()
             };
 
-            console.log('Dados do comentário:', commentData);
+            console.log('💾 Salvando comentário no banco:', commentData);
 
-            await addDoc(collection(db, 'comments'), commentData);
+            // Salvar comentário
+            const docRef = await addDoc(collection(db, 'comments'), commentData);
+            console.log('✅ Comentário salvo com ID:', docRef.id);
             
             // Incrementar contador de comentários no post
             const postRef = doc(db, 'posts', postId);
             await updateDoc(postRef, {
                 commentsCount: increment(1)
             });
+            console.log('✅ Contador de comentários atualizado');
 
-            console.log('Comentário adicionado com sucesso!');
             this.showSuccessNotification('Comentário adicionado! 💬');
             
-            // Recarregar comentários para este post específico para garantir exibição imediata
-            setTimeout(() => {
-                this.loadComments(postId);
-            }, 200);
+            // Forçar recarregamento imediato dos comentários deste post
+            console.log('🔄 Forçando recarregamento dos comentários...');
+            
+            // Carregar comentários diretamente sem delay
+            this.loadComments(postId);
             
         } catch (error) {
-            console.error('Erro ao adicionar comentário:', error);
+            console.error('❌ Erro ao adicionar comentário:', error);
             alert('Erro ao adicionar comentário. Tente novamente.');
+        }
+    }
+
+    async deleteComment(commentId, postId) {
+        if (!this.currentUser) {
+            alert('Você precisa estar logado para excluir comentários!');
+            return;
+        }
+
+        // Confirmar exclusão
+        const confirmDelete = confirm('Tem certeza que deseja excluir este comentário?');
+        if (!confirmDelete) {
+            return;
+        }
+
+        try {
+            console.log('🗑️ Excluindo comentário:', { commentId, postId });
+
+            // Buscar o comentário para verificar se o usuário é o autor
+            const commentRef = doc(db, 'comments', commentId);
+            const commentDoc = await getDoc(commentRef);
+            
+            if (!commentDoc.exists()) {
+                alert('Comentário não encontrado!');
+                return;
+            }
+
+            const commentData = commentDoc.data();
+            
+            // Verificar se o usuário atual é o autor do comentário
+            if (commentData.authorId !== this.currentUser.uid) {
+                alert('Você só pode excluir seus próprios comentários!');
+                return;
+            }
+
+            // Excluir o comentário
+            await deleteDoc(commentRef);
+            console.log('✅ Comentário excluído com sucesso');
+
+            // Decrementar contador de comentários no post
+            const postRef = doc(db, 'posts', postId);
+            await updateDoc(postRef, {
+                commentsCount: increment(-1)
+            });
+            console.log('✅ Contador de comentários decrementado');
+
+            this.showSuccessNotification('Comentário excluído! 🗑️');
+
+        } catch (error) {
+            console.error('❌ Erro ao excluir comentário:', error);
+            alert('Erro ao excluir comentário. Tente novamente.');
         }
     }
 
@@ -496,10 +551,10 @@ class PostsManager {
         console.log(`Carregando comentários para post: ${postId}`);
         
         try {
+            // Query simplificada sem orderBy para evitar necessidade de índice composto
             const commentsQuery = query(
                 collection(db, 'comments'),
-                where('postId', '==', postId),
-                orderBy('createdAt', 'asc')
+                where('postId', '==', postId)
             );
 
             const unsubscribe = onSnapshot(commentsQuery, (snapshot) => {
@@ -510,6 +565,13 @@ class PostsManager {
                     const comment = { id: doc.id, ...doc.data() };
                     console.log('Comentário encontrado:', comment);
                     comments.push(comment);
+                });
+
+                // Ordenar comentários no lado do cliente por data de criação
+                comments.sort((a, b) => {
+                    const dateA = a.createdAt.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
+                    const dateB = b.createdAt.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+                    return dateA - dateB; // Ordem crescente (mais antigos primeiro)
                 });
 
                 console.log(`Total de comentários para ${postId}:`, comments.length);
@@ -531,8 +593,7 @@ class PostsManager {
             try {
                 const commentsQuery = query(
                     collection(db, 'comments'),
-                    where('postId', '==', postId),
-                    orderBy('createdAt', 'asc')
+                    where('postId', '==', postId)
                 );
                 
                 const snapshot = await getDocs(commentsQuery);
@@ -540,6 +601,13 @@ class PostsManager {
                 snapshot.forEach((doc) => {
                     const comment = { id: doc.id, ...doc.data() };
                     comments.push(comment);
+                });
+                
+                // Ordenar comentários no lado do cliente
+                comments.sort((a, b) => {
+                    const dateA = a.createdAt.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
+                    const dateB = b.createdAt.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+                    return dateA - dateB;
                 });
                 
                 console.log(`Comentários carregados diretamente para ${postId}:`, comments.length);
@@ -551,12 +619,23 @@ class PostsManager {
     }
 
     renderCommentsWithPreview(postId, comments) {
+        console.log(`🎯 renderCommentsWithPreview chamado para post ${postId} com ${comments.length} comentários`);
+        
         const previewContainer = document.getElementById(`comments-preview-${postId}`);
         const fullContainer = document.getElementById(`comments-full-${postId}`);
         const toggleContainer = document.getElementById(`comments-toggle-${postId}`);
         
+        console.log('Containers encontrados:', {
+            preview: !!previewContainer,
+            full: !!fullContainer,
+            toggle: !!toggleContainer
+        });
+        
         if (!previewContainer || !fullContainer || !toggleContainer) {
-            console.log('Containers não encontrados para post:', postId);
+            console.error('❌ Containers não encontrados para post:', postId);
+            console.log('Preview container:', previewContainer);
+            console.log('Full container:', fullContainer);
+            console.log('Toggle container:', toggleContainer);
             return;
         }
 
@@ -564,17 +643,19 @@ class PostsManager {
         previewContainer.innerHTML = '';
         fullContainer.innerHTML = '';
 
-        console.log(`Post ${postId}: ${comments.length} comentários encontrados`);
+        console.log(`📊 Post ${postId}: ${comments.length} comentários encontrados`);
 
         if (comments.length === 0) {
             // Mostrar mensagem quando não há comentários
-            previewContainer.innerHTML = `
+            const emptyMessage = `
                 <div class="text-center text-gray-500 py-4">
                     <div class="mb-2 text-2xl">💬</div>
                     <p class="text-sm">Seja o primeiro a comentar!</p>
                 </div>
             `;
+            previewContainer.innerHTML = emptyMessage;
             toggleContainer.classList.add('hidden');
+            console.log('✅ Mensagem vazia adicionada ao preview container');
             return;
         }
 
@@ -582,33 +663,61 @@ class PostsManager {
         const previewComments = comments.slice(0, 3);
         const remainingComments = comments.slice(3);
 
+        console.log(`📝 Renderizando ${previewComments.length} comentários no preview`);
+
         // Adicionar comentários do preview
-        previewComments.forEach(comment => {
-            previewContainer.innerHTML += this.renderComment(comment);
+        let previewHtml = '';
+        previewComments.forEach((comment, index) => {
+            const commentHtml = this.renderComment(comment);
+            previewHtml += commentHtml;
+            console.log(`Comentário ${index + 1} renderizado:`, comment.content.substring(0, 50));
         });
+        
+        previewContainer.innerHTML = previewHtml;
+        console.log('✅ HTML dos comentários adicionado ao preview container');
+        console.log('Preview container HTML:', previewContainer.innerHTML.substring(0, 200));
 
         // Se há mais de 3 comentários, mostrar botão e preparar lista completa
         if (remainingComments.length > 0) {
             toggleContainer.classList.remove('hidden');
             
             // Renderizar todos os comentários no container completo
+            let fullHtml = '';
             comments.forEach(comment => {
-                fullContainer.innerHTML += this.renderComment(comment);
+                fullHtml += this.renderComment(comment);
             });
+            fullContainer.innerHTML = fullHtml;
 
             // Atualizar texto do botão
             const showMoreSpan = toggleContainer.querySelector('.show-more');
             if (showMoreSpan) {
                 showMoreSpan.textContent = `Ver mais ${remainingComments.length} comentários`;
             }
+            console.log(`✅ Botão "Ver mais" configurado para ${remainingComments.length} comentários`);
         } else {
             toggleContainer.classList.add('hidden');
         }
+        
+        console.log('🎉 renderCommentsWithPreview concluído para post:', postId);
     }
 
     renderComment(comment) {
         const tagHtml = this.renderUserTag(comment.authorTag || 'membro', 'small');
         const timeAgo = this.getTimeAgo(comment.createdAt.toDate ? comment.createdAt.toDate() : new Date(comment.createdAt));
+        
+        // Verificar se o comentário é do usuário atual
+        const isOwnComment = this.currentUser && comment.authorId === this.currentUser.uid;
+        
+        // Botão de excluir (visível apenas para o autor)
+        const deleteButton = isOwnComment ? `
+            <button onclick="postsManager.deleteComment('${comment.id}', '${comment.postId}')" 
+                    class="delete-comment-btn text-red-500 hover:text-red-700 transition-colors duration-200 p-1 rounded hover:bg-red-50" 
+                    title="Excluir comentário">
+                <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+            </button>
+        ` : '';
         
         return `
             <div class="flex space-x-2 sm:space-x-3 p-2 sm:p-3 bg-gray-50 rounded-lg">
@@ -621,7 +730,10 @@ class PostsManager {
                             ${tagHtml}
                             <span class="font-medium text-gray-800 text-xs sm:text-sm truncate">${this.escapeHtml(comment.authorName)}</span>
                         </div>
-                        <span class="text-xs text-gray-500">${timeAgo}</span>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs text-gray-500">${timeAgo}</span>
+                            ${deleteButton}
+                        </div>
                     </div>
                     <p class="text-xs sm:text-sm text-gray-700 leading-relaxed break-words">${this.escapeHtml(comment.content)}</p>
                 </div>
@@ -801,11 +913,48 @@ class PostsManager {
         }
     }
 
-    // Método para carregar comentários de todos os posts
+    // Método para testar estrutura DOM dos comentários
+    testCommentContainers(postId) {
+        console.log(`🔍 Testando containers de comentários para post: ${postId}`);
+        
+        const post = document.querySelector(`[id*="${postId}"]`);
+        console.log('Post element encontrado:', !!post);
+        
+        const commentsSection = document.getElementById(`comments-${postId}`);
+        console.log('Comments section encontrada:', !!commentsSection);
+        
+        const previewContainer = document.getElementById(`comments-preview-${postId}`);
+        console.log('Preview container encontrado:', !!previewContainer);
+        
+        if (previewContainer) {
+            console.log('Preview container HTML atual:', previewContainer.innerHTML);
+            console.log('Preview container classes:', previewContainer.className);
+            console.log('Preview container visível:', getComputedStyle(previewContainer).display !== 'none');
+        }
+        
+        const fullContainer = document.getElementById(`comments-full-${postId}`);
+        console.log('Full container encontrado:', !!fullContainer);
+        
+        const toggleContainer = document.getElementById(`comments-toggle-${postId}`);
+        console.log('Toggle container encontrado:', !!toggleContainer);
+        
+        // Verificar se a seção de comentários existe no HTML do post
+        const postElement = document.querySelector(`[data-post-id="${postId}"], article:has([data-post-id="${postId}"])`);
+        console.log('Post element específico:', !!postElement);
+        
+        if (postElement) {
+            const commentFormInPost = postElement.querySelector('.comment-form');
+            console.log('Comment form no post:', !!commentFormInPost);
+        }
+    }
+
     loadAllComments() {
         for (const [postId] of this.posts) {
             // Carregar comentários com pequeno delay escalonado para evitar sobrecarga
             setTimeout(() => {
+                console.log(`🚀 Carregando comentários para post: ${postId}`);
+                // Testar containers antes de carregar
+                this.testCommentContainers(postId);
                 this.loadComments(postId);
             }, 100);
         }
